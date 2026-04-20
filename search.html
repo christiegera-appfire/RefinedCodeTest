@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search</title>
+<link rel="stylesheet" href="https://use.typekit.net/eah5sfj.css">
+<style>
+
+  body, .card p, .card h3, .kb-card p, .kb-card h3,
+.card-excerpt, .results-count, .meta-space,
+.sidebar-heading, .space-name, .card-title,
+.hint, .meta, .name {
+  font-weight: 700 !important;
+}
+
+.card-title { font-size: 16px !important; }
+.card-excerpt { font-size: 13px !important; }
+  
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Kill any extra space Refined adds around the page content */
+  html, body { height: auto !important; min-height: 0 !important; background: rgba(10,10,14,1) !important; }
+  .page-shell { min-height: 100vh !important; }
+  .le_element_html_content, .le_element_type_html, .rw_content, .le_sections,
+  .rw_section { background: rgba(10,10,14,1) !important; }
+  /* Kill Refined's wrapper padding */
+  .le_element_html_content, .le_element_type_html, .rw_content,
+  .le_sections, [class*="le_element"], [class*="le_section"],
+  section.le_section, .le_page, .le_page_content,
+  section, .rw_section { padding-bottom: 0 !important; margin-bottom: 0 !important; }
+  :root {
+    --font: "area", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --bg:            #0b0f16;
+    --surface:       rgba(12,17,28,.9);
+    --border:        rgba(215,222,234,.14);
+    --border-strong: rgba(215,222,234,.26);
+    --text:          #ffffff;
+    --text-muted:    rgba(215,222,234,.55);
+    --accent:        #397BFF;
+    --shadow-sm:     0 2px 8px rgba(0,0,0,.18);
+    --shadow-md:     0 8px 28px rgba(0,0,0,.35);
+    --radius:        18px;
+    --sidebar-w:     320px;
+    --color-ac:  #397BFF;
+    --color-adc: #A78BFA;
+    --color-ms:  #FF8A5B;
+    --color-sf:  #63E6E2;
+    --color-sl:  #FFE08A;
+    --color-mo:  #6875f5;
+      --color-sei: #22C55E;
+  }
+  html, body { font-family: var(--font); background: rgba(10,10,14,1); color: #fff; line-height: 1.5; }
+  .page-shell { display: flex; flex-direction: column; font-size: 14px; }
+
+  /* Topbar */
+  .topbar { background: transparent; border: none; padding: 12px 48px; display: flex; align-items: center; gap: 24px; position: sticky; top: 0; z-index: 100; }
+  .topbar-label { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.6); letter-spacing: .1em; text-transform: ; white-space: nowrap; flex-shrink: 0; }
+  .search-wrap { flex: 1 !important; max-width: 1100px !important; display: flex !important; align-items: center !important; border: 1px solid rgba(255,255,255,.2) !important; border-radius: 999px !important; overflow: hidden !important; background: rgba(10,10,14,1) !important; transition: border-color .15s; }
+  .search-wrap:focus-within { border-color: var(--border-strong); }
+  .search-icon { flex-shrink: 0; margin: 0 10px 0 16px; color: rgba(255,255,255,.5); pointer-events: none; }
+  .search-input { flex: 1; height: 44px; padding: 0; border: none; background: transparent; font-family: var(--font); font-size: 15px; color: #fff; outline: none; min-width: 0; }
+  .search-input::placeholder { color: rgba(255,255,255,.4); }
+  .search-clear { flex-shrink: 0; margin: 0 6px; background: none; border: none; cursor: pointer; color: rgba(255,255,255,.5); padding: 4px; border-radius: 50%; display: none; align-items: center; justify-content: center; transition: color .15s; }
+  .search-clear:hover { color: #fff; }
+  .search-clear.visible { display: flex; }
+  .search-enter { flex-shrink: 0; height: 44px; padding: 0 20px; background: transparent; border: none; border-left: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.5); font-size: 12px; font-weight: 600; font-family: var(--font); letter-spacing: .05em; cursor: pointer; white-space: nowrap; transition: color .15s; display: flex; align-items: center; }
+  .search-enter:hover { color: #fff; }
+
+  /* Layout */
+  .body-layout { display: flex; width: 100%; padding: 32px 48px 24px; gap: 36px; align-items: flex-start; min-height: 0; }
+
+  /* Sidebar */
+  .sidebar { width: var(--sidebar-w); flex-shrink: 0; position: sticky; top: 96px; display: flex; flex-direction: column; gap: 12px; align-self: flex-start; overflow: hidden; }
+  .sidebar-section { background: rgba(10,10,14,1); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .sidebar-heading { padding: 11px 16px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.6); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .sidebar-clear { font-size: 11px; font-weight: 600; color: var(--accent); cursor: pointer; text-transform: none; letter-spacing: 0; background: none; border: none; padding: 0; display: none; }
+  .sidebar-clear.visible { display: block; }
+  .sidebar-clear:hover { text-decoration: underline; }
+
+  /* Checkboxes */
+  .filter-cb { appearance: none; width: 16px; height: 16px; border: 1px solid var(--border); border-radius: 4px; background: rgba(215,222,234,.06); flex-shrink: 0; cursor: pointer; transition: border-color .12s, background .12s; position: relative; }
+  .filter-cb:checked { background: var(--accent); border-color: var(--accent); }
+  .filter-cb:checked::after { content: ''; position: absolute; left: 4px; top: 2px; width: 6px; height: 4px; border-left: 1.5px solid white; border-bottom: 1.5px solid white; transform: rotate(-45deg); }
+
+  /* Platform list */
+  .platform-list { list-style: none; padding: 4px 0; }
+  .platform-item label { display: flex; align-items: center; gap: 9px; padding: 7px 16px; cursor: pointer; color: #fff; font-size: 13px; font-weight: 800; user-select: none; transition: color .12s; }
+  .platform-item label:hover { color: #fff; }
+  .platform-item input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+  .platform-dot {
+    width: 14px; height: 14px; min-width: 14px; flex-shrink: 0;
+    border-radius: 2px; border: 1px solid #4466FF;
+    background: transparent;
+    transition: background .15s ease;
+  }
+  .platform-item input[type="checkbox"]:checked ~ .platform-dot {
+    background: #4466FF;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center; background-size: 9px 7px;
+  }
+
+  /* Space list */
+  .space-list { list-style: none; max-height: 380px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .space-list::-webkit-scrollbar { width: 4px; }
+  .space-list::-webkit-scrollbar-thumb { background: rgba(215,222,234,.2); border-radius: 2px; }
+  .space-item label { display: flex; align-items: center; gap: 9px; padding: 7px 16px; cursor: pointer; color: #fff; font-size: 13px; font-weight: 400; user-select: none; transition: color .12s; }
+  .space-item label:hover { color: #fff; }
+  .space-item input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+  .space-check {
+    width: 14px; height: 14px; min-width: 14px; flex-shrink: 0;
+    border-radius: 2px; border: 1px solid #4466FF;
+    background: transparent; transition: background .15s ease;
+  }
+  .space-item input[type="checkbox"]:checked ~ .space-check {
+    background: #4466FF;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center; background-size: 9px 7px;
+  }
+  .space-item input[type="checkbox"]:checked ~ .space-check + .space-name { color: #fff; }
+  .space-name { flex: 1; line-height: 1.3; }
+  .sidebar-loading { padding: 14px 16px; font-size: 12px; color: rgba(255,255,255,.6); display: flex; align-items: center; gap: 8px; }
+  .mini-spinner { width: 12px; height: 12px; border: 1.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+
+  /* Main */
+  .main { flex: 1; min-width: 0; }
+  .results-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; min-height: 24px; flex-wrap: wrap; gap: 8px; }
+  .space-banner { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin-bottom: 16px; background: rgba(57,123,255,.12); border: 1px solid rgba(57,123,255,.35); border-radius: 8px; font-size: 13px; color: #fff; }
+  .space-banner-icon { font-size: 15px; flex-shrink: 0; }
+  .space-banner-text { flex: 1; }
+  .space-banner-text strong { color: #6fa3ff; }
+  .space-banner-expand { background: none; border: 1px solid rgba(57,123,255,.45); border-radius: 5px; color: #6fa3ff; font-size: 12px; font-weight: 600; padding: 4px 10px; cursor: pointer; white-space: nowrap; transition: background .15s, color .15s; font-family: var(--font); }
+  .space-banner-expand:hover { background: rgba(57,123,255,.2); color: #fff; }
+  .results-count { font-size: 13px; color: rgba(255,255,255,.6); }
+  .results-count strong { color: #fff; font-weight: 700; }
+  .active-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(57,123,255,.15); color: var(--accent); border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid rgba(57,123,255,.3); transition: background .12s; }
+  .filter-tag:hover { background: rgba(57,123,255,.25); }
+
+  /* Cards */
+  .results-list { display: flex; flex-direction: column; gap: 10px; }
+  .result-card.external-card { border-color: rgba(34,197,94,.25); }
+  .result-card.external-card:hover { border-color: rgba(34,197,94,.5); }
+  .external-badge { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #22C55E; background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.3); border-radius: 4px; padding: 2px 6px; margin-left: 8px; vertical-align: middle; }
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; text-decoration: none; color: inherit; display: block; transition: border-color .15s, box-shadow .15s, transform .15s; box-shadow: var(--shadow-sm); animation: fadeSlideIn .2s ease both; backdrop-filter: blur(6px); }
+  .result-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+  @keyframes fadeSlideIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+  .card-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: rgba(255,255,255,.6); }
+  .card-title { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.3; flex: 1; letter-spacing: -.01em; }
+  .card-title mark { background: rgba(57,123,255,.28); color: #fff; border-radius: 2px; padding: 0 2px; }
+  .card-excerpt { font-size: 13px; color: rgba(215,222,234,.65); line-height: 1.6; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-excerpt mark { background: rgba(57,123,255,.22); color: #fff; border-radius: 2px; padding: 0 2px; }
+  .card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .meta-badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.6); background: rgba(215,222,234,.08); padding: 3px 9px; border-radius: 999px; }
+  .meta-sep { color: var(--border-strong); font-size: 11px; }
+  .meta-space { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.6); }
+
+  /* Platform tags */
+  .platform-badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid; background: transparent; letter-spacing: .01em; }
+  .pb-ac  { border-color: var(--color-ac);  color: var(--color-ac); }
+  .pb-adc { border-color: var(--color-adc); color: var(--color-adc); }
+  .pb-ms  { border-color: var(--color-ms);  color: var(--color-ms); }
+  .pb-sf  { border-color: var(--color-sf);  color: var(--color-sf); }
+  .pb-sl  { border-color: var(--color-sl);  color: var(--color-sl); }
+  .pb-mo  { border-color: var(--color-mo);  color: var(--color-mo); }
+  .pb-sei { border-color: var(--color-sei); color: var(--color-sei); }
+  .result-card:hover .pb-ac  { background: rgba(57,123,255,.1); }
+  .result-card:hover .pb-adc { background: rgba(167,139,250,.1); }
+  .result-card:hover .pb-ms  { background: rgba(255,138,91,.1); }
+  .result-card:hover .pb-sf  { background: rgba(99,230,226,.1); }
+  .result-card:hover .pb-sl  { background: rgba(255,224,138,.1); }
+  .result-card:hover .pb-mo  { background: rgba(104,117,245,.1); }
+  .result-card:hover .pb-sei { background: rgba(34,197,94,.1); }
+
+  /* States */
+  .state-box { padding: 24px 24px; text-align: center; color: rgba(255,255,255,.6); }
+  .state-box svg { margin-bottom: 16px; opacity: .3; }
+  .state-box h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .state-box p { font-size: 13px; max-width: 320px; margin: 0 auto; }
+  .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .load-more-wrap { text-align: center; margin-top: 20px; }
+  .load-more-btn { padding: 9px 28px; background: rgba(215,222,234,.08); border: 1px solid var(--border); border-radius: 999px; font-family: var(--font); font-size: 13px; font-weight: 700; color: rgba(255,255,255,.6); cursor: pointer; transition: border-color .15s, color .15s, background .15s, transform .12s; }
+  .load-more-btn:hover { border-color: var(--border-strong); color: #fff; background: rgba(215,222,234,.12); transform: translateY(-1px); }
+
+  @media (max-width: 720px) {
+    .body-layout { flex-direction: column; padding: 16px; gap: 16px; }
+    .sidebar { width: 100%; position: static; }
+    .space-list { max-height: 200px; }
+    .topbar { padding: 0 16px; }
+  }
+
+  /* ── Related Questions Panel ── */
+  .rq-panel {
+    position: fixed; top: 60px; right: -420px; width: 420px; height: calc(100vh - 60px);
+    background: #0e1219; border-left: 1px solid rgba(215,222,234,.14);
+    z-index: 1000; display: flex; flex-direction: column;
+    transition: right .3s cubic-bezier(.4,0,.2,1);
+    box-shadow: -8px 0 32px rgba(0,0,0,.4);
+  }
+  .rq-panel.open { right: 0; }
+  .rq-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px; border-bottom: 1px solid rgba(215,222,234,.1);
+    flex-shrink: 0;
+  }
+  .rq-panel-title { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: .04em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+  .rq-panel-title svg { color: #6fa3ff; }
+  .rq-panel-close { background: none; border: none; color: rgba(255,255,255,.5); cursor: pointer; padding: 4px; border-radius: 4px; transition: color .15s; display: flex; align-items: center; }
+  .rq-panel-close:hover { color: #fff; }
+  .rq-panel-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .rq-question-btn {
+    width: 100%; text-align: left; background: rgba(215,222,234,.05);
+    border: 1px solid rgba(215,222,234,.1); border-radius: 8px;
+    padding: 12px 14px; color: #fff; font-size: 13px; font-family: var(--font);
+    cursor: pointer; transition: background .15s, border-color .15s; line-height: 1.4;
+  }
+  .rq-question-btn:hover { background: rgba(57,123,255,.12); border-color: rgba(57,123,255,.35); color: #fff; }
+  .rq-question-btn.active { background: rgba(57,123,255,.15); border-color: rgba(57,123,255,.5); }
+  .rq-answer {
+    background: rgba(57,123,255,.07); border: 1px solid rgba(57,123,255,.2);
+    border-radius: 8px; padding: 14px; font-size: 13px; color: rgba(255,255,255,.85);
+    line-height: 1.6; display: none; margin-top: -4px;
+  }
+  .rq-answer.visible { display: block; }
+  .rq-answer-loading { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,.5); font-size: 13px; }
+  .rq-answer-loading .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.15); border-top-color: #6fa3ff; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+  .rq-answer-text { margin-bottom: 10px; line-height: 1.6; }
+  .rq-answer-refs { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; border-top: 1px solid rgba(215,222,234,.12); padding-top: 10px; }
+  .rq-answer-ref {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 600;
+    color: #6fa3ff !important; text-decoration: none !important;
+    padding: 6px 10px; border-radius: 6px;
+    background: rgba(57,123,255,.07); border: 1px solid rgba(57,123,255,.15);
+    transition: background .15s, border-color .15s;
+    line-height: 1.4;
+  }
+  .rq-answer-ref:hover { background: rgba(57,123,255,.15); border-color: rgba(57,123,255,.35); color: #fff !important; }
+  .rq-answer-ref svg { flex-shrink: 0; opacity: 0.6; }
+  .rq-skeleton { height: 52px; background: rgba(215,222,234,.06); border-radius: 8px; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:.4 } 50% { opacity:.8 } }
+
+  /* Explore AI button */
+  .explore-ai-btn {
+    display: none; align-items: center; gap: 7px; padding: 8px 14px;
+    background: rgba(57,123,255,.12); border: 1px solid rgba(57,123,255,.3);
+    border-radius: 8px; color: #6fa3ff; font-size: 13px; font-weight: 600;
+    font-family: var(--font); cursor: pointer; transition: background .15s, border-color .15s;
+    margin-bottom: 16px; white-space: nowrap;
+  }
+  .explore-ai-btn:hover { background: rgba(57,123,255,.2); border-color: rgba(57,123,255,.5); color: #fff; }
+  .explore-ai-btn.visible { display: flex; }
+  .explore-ai-btn svg { flex-shrink: 0; }
+  .rq-overlay { display: none; position: fixed; inset: 0; z-index: 999; }
+  .rq-overlay.visible { display: block; }
+
+</style>
+</head>
+<body>
+<div class="page-shell">
+
+  <header class="topbar">
+    <span class="topbar-label"> </span>
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search documentation…" autocomplete="off" spellcheck="false"/>
+      <button class="search-clear" id="searchClear" aria-label="Clear">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <button class="search-enter" id="searchEnter">Enter</button>
+    </div>
+  </header>
+
+  <div class="body-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Platform <button class="sidebar-clear" id="platformClear">Clear</button></div>
+        <ul class="platform-list" id="platformList"></ul>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="spaceBanner" style="display:none" class="space-banner">
+        <span class="space-banner-icon">📁</span>
+        <span class="space-banner-text">Searching in: <strong id="spaceBannerName"></strong></span>
+        <button class="space-banner-expand" id="spaceBannerExpand">Search all spaces</button>
+      </div>
+      <div class="results-meta">
+        <div class="results-count" id="resultsCount"></div>
+        <div class="active-filters" id="activeFilters"></div>
+      </div>
+
+      <button class="explore-ai-btn" id="exploreAiBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 3L10.5 7.5L15 9L10.5 10.5L9 15L7.5 10.5L3 9L7.5 7.5L9 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M18 12L18.75 14.25L21 15L18.75 15.75L18 18L17.25 15.75L15 15L17.25 14.25L18 12Z" fill="currentColor"/></svg>
+        Explore related questions
+      </button>
+      <div id="resultsArea">
+        <div class="state-box">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <h3>Start searching</h3>
+          <p>Type a keyword above to search across all documentation spaces.</p>
+        </div>
+      </div>
+      <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+        <button class="load-more-btn" id="loadMoreBtn">Load more results</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Related Questions Panel -->
+<div class="rq-overlay" id="rqOverlay"></div>
+<div class="rq-panel" id="rqPanel">
+  <div class="rq-panel-header">
+    <div class="rq-panel-title">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 3L10.5 7.5L15 9L10.5 10.5L9 15L7.5 10.5L3 9L7.5 7.5L9 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M18 12L18.75 14.25L21 15L18.75 15.75L18 18L17.25 15.75L15 15L17.25 14.25L18 12Z" fill="currentColor"/></svg>
+      Explore related questions
+    </div>
+    <button class="rq-panel-close" id="rqClose" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="rq-panel-body" id="rqBody"></div>
+</div>
+
+<script>
+// ── Platform config ──────────────────────────────────────────────
+const EXTERNAL_APPS = [
+  {
+    name: 'JXL',
+    description: 'JXL for Jira — spreadsheet-style issue editor',
+    url: 'https://jxl.app/docs/guide/demo/',
+    platforms: ['atlassian-cloud', 'atlassian-dc'],
+    keywords: ['jxl', 'spreadsheet', 'issue editor']
+  },
+];
+
+const PLATFORMS = [
+  { id:'atlassian-cloud', label:'Atlassian Cloud',       color:'#397BFF', badgeClass:'pb-ac' },
+  { id:'atlassian-dc',    label:'Atlassian Data Center', color:'#A78BFA', badgeClass:'pb-adc' },
+  { id:'slack',           label:'Slack',                 color:'#FFE08A', badgeClass:'pb-sl' },
+  { id:'microsoft',       label:'Microsoft',             color:'#FF8A5B', badgeClass:'pb-ms' },
+  { id:'monday',          label:'monday.com',            color:'#6875f5', badgeClass:'pb-mo' },
+  { id:'SEI',             label:'Software Engineering Intelligence', color:'#22C55E', badgeClass:'pb-sei' },
+  { id:'salesforce',      label:'Salesforce',            color:'#63E6E2', badgeClass:'pb-sf' },
+];
+
+const ACRONYM_MAP = {
+  "JMWE":"Jira Misc Workflow Extensions","JMCF":"Jira Misc Custom Fields","JSU":"JSU Automation Suite",
+  "CMJ":"Configuration Manager for Jira","JXL":"JXL","HTML":"HTML for Confluence",
+  "SQL":"SQL for Confluence","JCLI":"Jira Command Line Interface","BCLI":"Bamboo Command Line Interface",
+  "SCLI":"Bitbucket Command Line Interface","CSOAP":"Confluence Command Line Interface",
+  "SIL":"SIL Engine Power Suite","LM":"LaTeX Math","LML":"LaTeX Math Lite",
+  "MARKDOWN":"Markdown for Confluence","PP":"Planning Poker","POLL":"Polls for Confluence",
+  "NH":"Numbered Headings","NC":"Numbered Captions","PCJ":"Project Configurator for Jira",
+  "ICJ":"Integrity Check for Jira","FB":"Flow Board","PA":"Power Admin for Jira",
+  "PE":"Prometheus Exporter","ABTB":"Agile Board Template Builder","CPT":"Copy Page Tree",
+  "CACHE":"Cache for Confluence","CHAT":"Chat for Jira Service Management",
+  "GRAPH":"Charts Graphs for Bitbucket","HED":"Hedge Risk Management",
+  "SNIP":"Snippets for Bitbucket","YACC":"Yet Another Commit Checker",
+  "UTIL":"Power Utilities for Jira","SPACE":"Spacetree for Confluence",
+  "SOURCE":"Source Editor for Confluence","EDITOR":"Power Editor for Bitbucket",
+  "TFS4JIRA":"TFS4JIRA Azure DevOps","ANNOUNCE":"Announcer","ENH":"Easy Numbered Headings",
+  "FOX":"Foxly","OCTO":"Octo","RUN":"Run Self-Service Reports","CR":"Canned Responses Pro",
+  "NEWS":"News Teaser for Confluence","JENK":"Webhook Jenkins for Bitbucket",
+  "AIP":"Assets Inventory Plugin for Jira","CRU":"Crucible Review Hook",
+  "TTS":"Time to SLA","TTSC":"Time to SLA","XL":"Excel for Confluence",
+  "SPM":"BigPicture Enterprise","ME":"MultiExcerpt","JMWEC":"Jira Misc Workflow Extensions",
+  "JMCFC":"Jira Misc Custom Fields","JSUCLOUD":"JSU Automation Suite",
+  "JQLSEARCH":"JQL Search Extensions for Jira","JPP":"Agile Poker for Jira",
+  "JIFS":"Jira Integration Slack","JIFMT":"Microsoft Teams Integration Jira",
+  "JCPP":"Clone Plus for Jira","JEPC":"Enhancer Plugin for Jira",
+  "JEP":"Enhancer Plugin for Jira","HFS":"HelpDesk Slack Support",
+  "HFMT":"HelpDesk Microsoft Teams","GFJ":"Gaia for Jira","GCC":"Google Calendar Jira",
+  "GMFC":"GitHub Macros for Confluence","EASYF":"Easy Forms for Confluence",
+  "EIFJC":"Easy Integrations for Jira","EI4J":"Easy Integrations for Jira",
+  "DFS":"Docs Slack Confluence","DELGROUPS":"Delegated Group Management",
+  "DADMIN":"Delegated Project Admin","PCFJ":"Delegated Project Creator for Jira",
+  "DBCF":"Power Database Fields","CSOT":"Create on Transition for Jira",
+  "CSFJIRA":"Connector for Salesforce Jira","COPYSP":"Copy Space for Confluence",
+  "CTFCC":"Composition Tabs for Confluence","C4J":"Comala Canvas for Jira",
+  "CBCCL":"Comala Boards for Confluence","CDALS":"Comala Document Approval",
+  "CDCCL":"Comala Document Control","CDMC":"Comala Document Management",
+  "CPCL":"Comala Publishing","CRCCL":"Comala Read Confirmations",
+  "AIPC":"Assets Inventory Plugin for Jira","ART":"Reports Timesheets for Jira",
+  "AW":"Autowatch for Jira","APBCFJ":"Power BI Connector for Jira",
+  "ATCFJ":"Tableau Connector Pro for Jira","CCLI":"Run CLI Actions in Confluence",
+  "JCLIP":"Run CLI Actions in Jira","CCSFCONFC":"Connector Salesforce Confluence",
+  "CFGDCS":"Connector Google Drive Confluence","CMSP":"Macro Security for Confluence",
+  "HTMLM":"HTML Macro for Confluence","ILV":"Issue Matrix for Jira",
+  "IMC":"Issue Matrix for Jira","IMG":"Image Slider for Confluence",
+  "KCFPRO":"Power Custom Fields for Jira","LINC":"Linking for Confluence",
+  "LINS":"Linking for Confluence","OFJ":"OKR for Jira",
+  "PAFC":"Page Approval for Confluence","PAFS":"Page Approval for Confluence",
+  "PDGR":"Power Dashboards Reports Gadgets","PSCONF":"Power Scripts for Confluence",
+  "PSJC":"Power Scripts Jira Workflow Automation","REPS":"Reporting for Confluence",
+  "RFC":"Reporting for Confluence","RFCDOC":"Rich Filters for Jira Dashboards",
+  "RFP":"Rich Filters for Jira Dashboards","RFPDF":"Rich Filters PDF Reports for Jira",
+  "RFSD":"Rich Filters Service Management Dashboards",
+  "RFTT":"Rich Filters Time Tracking Dashboards",
+  "SCAFC":"Scaffolding Forms Templates for Confluence",
+  "SCAFS":"Scaffolding Forms Templates for Confluence","SCRP":"Scripting for Confluence",
+  "SECC":"Security Encryption for Confluence","SECS":"Security Encryption for Confluence",
+  "SFJSDC":"Contact Views Salesforce JSM","SFPUBC":"Publisher Confluence Salesforce",
+  "SILTEMPO":"SIL Tempo Connector","SRTFJ":"Swanly Portfolio Roadmaps",
+  "SRV":"Surveys for Jira","SURVOTE":"Survey Vote Macros",
+  "TBL":"Advanced Tables for Confluence","VISC":"Visibility for Confluence",
+  "VISS":"Visibility for Confluence","7TFJ":"7pace Timetracker for Jira",
+  "7TFM":"7pace Timetracker for monday","SPM":"BigPicture Enterprise",
+  "ScrumPrint":"Agile Cards Print Issues from Jira","dataplane":"Dataplane Reports for Jira",
+  "atdc":"Advanced Tables for Confluence",
+};
+
+const FUZZY_MAP = {
+  "bigpicture":"BigPicture","powerscripts":"Power Scripts",
+  "powercustomfields":"Power Custom Fields","powerutilities":"Power Utilities",
+  "poweradmin":"Power Admin","powerdashboards":"Power Dashboards",
+  "powerdatabase":"Power Database","powereditor":"Power Editor",
+  "powersalesforce":"Power Salesforce","powerbi":"Power BI",
+  "helpdesk":"HelpDesk+","timetosla":"Time to SLA",
+  "advancedtables":"Advanced Tables","richfilters":"Rich Filters",
+  "scaffolding":"Scaffolding Forms","comalaboards":"Comala Boards",
+  "comalacanvas":"Comala Canvas","comalaDocument":"Comala Document",
+  "comalapublishing":"Comala Publishing","dashboardhub":"Dashboard Hub Pro",
+  "jqlsearch":"JQL Search Extensions","multiexcerpt":"MultiExcerpt",
+  "pageapproval":"Page Approval","projectconfigurator":"Project Configurator",
+  "configurationmanager":"Configuration Manager for Jira",
+};
+
+function expandAcronym(query) {
+  const trimmed = query.trim();
+  const upper = trimmed.toUpperCase();
+  for (const [key, val] of Object.entries(ACRONYM_MAP)) {
+    if (key.toUpperCase() === upper) return val;
+  }
+  const normalized = trimmed.toLowerCase().replace(/[\s\-_]+/g, '');
+  if (FUZZY_MAP[normalized]) return FUZZY_MAP[normalized];
+  return trimmed;
+}
+
+const SPACE_PLATFORM_MAP = {
+  "7TFJ":["atlassian-cloud"],"7TFM":["monday"],"TBL":["atlassian-cloud"],"atdc":["atlassian-dc"],
+  "ABTB":["atlassian-dc"],"ScrumPrint":["atlassian-cloud","atlassian-dc"],"JPP":["atlassian-cloud"],
+  "ANNOUNCE":["atlassian-cloud","atlassian-dc"],"AIPC":["atlassian-cloud"],"AIP":["atlassian-dc"],
+  "AW":["atlassian-cloud"],"CACHE":["atlassian-cloud"],"CR":["atlassian-cloud"],"CT":["atlassian-dc"],
+  "CHAT":["atlassian-cloud"],"JCPP":["atlassian-cloud","atlassian-dc"],"CBCCL":["atlassian-cloud"],
+  "CBCSL":["atlassian-dc"],"C4J":["atlassian-cloud","atlassian-dc"],"CDALS":["atlassian-dc"],
+  "CDCCL":["atlassian-cloud"],"COMALACDCLS":["atlassian-dc"],"CDMC":["atlassian-cloud"],
+  "CDML":["atlassian-dc"],"CPCL":["atlassian-cloud"],"AHP":["atlassian-dc"],"CRCCL":["atlassian-cloud"],
+  "CTFCC":["atlassian-cloud"],"CTFCSM":["atlassian-dc"],"CMJ":["atlassian-cloud","atlassian-dc"],
+  "CSOAP":["atlassian-cloud","atlassian-dc"],"CCSFCONFC":["atlassian-cloud","salesforce"],
+  "CSFJIRA":["atlassian-cloud","atlassian-dc","salesforce"],"SFJSDC":["salesforce","atlassian-cloud"],
+  "CPT":["atlassian-cloud","atlassian-dc"],"COPYSP":["atlassian-cloud"],
+  "CSOT":["atlassian-cloud","atlassian-dc"],"DELGROUPS":["atlassian-cloud","atlassian-dc"],
+  "PCFJ":["atlassian-cloud","atlassian-dc"],"DFS":["atlassian-cloud","atlassian-dc","slack"],
+  "EASYF":["atlassian-cloud"],"EIFJC":["atlassian-cloud"],"EI4J":["atlassian-dc"],
+  "ENH":["atlassian-cloud","atlassian-dc"],"JEPC":["atlassian-cloud"],"JEP":["atlassian-dc"],
+  "XL":["atlassian-cloud","atlassian-dc"],"FOX":["atlassian-cloud"],"GFJ":["atlassian-cloud"],
+  "GMFC":["atlassian-cloud","atlassian-dc"],"GCC":["atlassian-cloud"],
+  "HFS":["atlassian-cloud","atlassian-dc","slack"],"HFMT":["microsoft","atlassian-dc"],
+  "HTML":["atlassian-cloud","atlassian-dc"],"HTMLM":["atlassian-cloud"],
+  "IMG":["atlassian-cloud","atlassian-dc"],"IMC":["atlassian-cloud"],"ILV":["atlassian-dc"],
+  "JCLI":["atlassian-cloud","atlassian-dc"],"JCLIP":["atlassian-cloud"],
+  "JIFS":["atlassian-cloud","atlassian-dc","slack"],"JIFMT":["atlassian-cloud","atlassian-dc","microsoft"],
+  "LM":["atlassian-cloud","atlassian-dc"],"LINC":["atlassian-cloud"],"LINS":["atlassian-dc"],
+  "CMSP":["atlassian-cloud"],"MARKDOWN":["atlassian-cloud","atlassian-dc"],
+  "ME":["atlassian-cloud","atlassian-dc"],"NEWS":["atlassian-cloud","atlassian-dc"],
+  "NC":["atlassian-cloud","atlassian-dc"],"NH":["atlassian-cloud","atlassian-dc"],
+  "OCTO":["atlassian-cloud"],"OFJ":["atlassian-cloud"],"PAFC":["atlassian-cloud"],
+  "PAFS":["atlassian-dc"],"PP":["atlassian-cloud","atlassian-dc"],
+  "POLL":["atlassian-cloud","atlassian-dc"],"APBCFJ":["atlassian-dc","microsoft"],
+  "DBCF":["atlassian-cloud"],"UTIL":["atlassian-cloud"],"PCJ":["atlassian-cloud"],
+  "PE":["atlassian-cloud","atlassian-dc"],"SFPUBC":["atlassian-cloud","salesforce"],
+  "RFC":["atlassian-cloud"],"REPS":["atlassian-dc"],"ART":["atlassian-cloud","atlassian-dc"],
+  "RUN":["atlassian-cloud"],"SCAFC":["atlassian-cloud"],"SCAFS":["atlassian-dc"],
+  "SCRP":["atlassian-cloud"],"SECC":["atlassian-cloud"],"SECS":["atlassian-dc"],
+  "SOURCE":["atlassian-cloud","atlassian-dc"],"SQL":["atlassian-cloud","atlassian-dc"],
+  "SRV":["atlassian-cloud","atlassian-dc"],"SRTFJ":["atlassian-cloud"],
+  "ATCFJ":["atlassian-cloud","atlassian-dc"],"VISC":["atlassian-cloud"],"VISS":["atlassian-dc"],
+  "DLP":["atlassian-cloud","atlassian-dc"],"BIGGANTT":["atlassian-cloud"],"SPM":["atlassian-cloud"],
+  "NF":["atlassian-cloud"],"REDC":["atlassian-cloud"],"CDACL":["atlassian-cloud"],
+  "TJC":["atlassian-cloud"],"PCFC":["atlassian-cloud"],"LF":["atlassian-cloud"],
+  "ACLI":["atlassian-cloud"],"MARK":["atlassian-cloud","atlassian-dc"],"CW":["atlassian-cloud"],
+  "FD":["SEI"],"PSJC":["atlassian-cloud"],"JMWEC":["atlassian-cloud"],
+  "JQLSEARCH":["atlassian-cloud","atlassian-dc"],"JSUCLOUD":["atlassian-cloud"],
+  "RFCDOC":["atlassian-cloud"],"TTSC":["atlassian-cloud"],
+  "7TFA":["atlassian-cloud"],"CMJC":["atlassian-cloud"],"RDD":["atlassian-cloud"],
+  "COMALACM":["atlassian-cloud"],"GVIZ":["atlassian-cloud","atlassian-dc"],
+  "KCF":["atlassian-cloud"],"SURVOTE":["atlassian-cloud","atlassian-dc"],
+  "CFGDCS":["atlassian-dc"],"TFS4JIRA":["atlassian-dc"],"TTS":["atlassian-cloud","atlassian-dc"],
+  "TSH":["atlassian-cloud"],"YACC":["atlassian-cloud","atlassian-dc"],
+  "JENK":["atlassian-cloud","atlassian-dc"],"PAGE":["atlassian-cloud","atlassian-dc"],
+  "SNIP":["atlassian-cloud","atlassian-dc"],"JMCF":["atlassian-cloud"],
+  "JMWE":["atlassian-dc"],"POKERADO":["atlassian-cloud"],"BCLI":["atlassian-dc"],
+  "CJSM":["atlassian-cloud"],"ACDC":["atlassian-dc"],"APDC":["atlassian-dc"],
+  "BPEdc":["atlassian-dc"],"GRAPH":["atlassian-cloud","atlassian-dc"],
+  "SCLI":["atlassian-dc"],"CVP":["atlassian-cloud"],"TBLSORT":["atlassian-cloud","atlassian-dc"],
+  "SDC":["atlassian-dc"],"SPACE":["atlassian-cloud","atlassian-dc"],
+  "EDITOR":["atlassian-cloud"],"CRU":["atlassian-dc"],"DADMIN":["atlassian-cloud","atlassian-dc"],
+  "PSJ":["atlassian-dc"],"PSCONF":["atlassian-dc"],"PA":["atlassian-cloud"],
+  "SCC":["atlassian-cloud","salesforce"],"CCLI":["atlassian-cloud","atlassian-dc"],
+  "CLSL":["atlassian-dc"],"IC":["atlassian-cloud"],"RFP":["atlassian-cloud"],
+  "RFTT":["atlassian-cloud"],"RFSD":["atlassian-cloud"],"RFPDF":["atlassian-cloud"],
+  "JMCFC":["atlassian-cloud"],"dataplane":["atlassian-cloud","atlassian-dc"],
+};
+
+const BASE_URL = window.location.origin;
+const PAGE_SIZE = 20;
+
+let allSpaces = [];
+let selectedSpaces    = new Set();
+let selectedPlatforms = new Set();
+let currentQuery = '';
+let currentRawQuery = '';
+let currentStart = 0;
+let totalResults = 0;
+let isLoading = false;
+let debounceTimer = null;
+
+async function init() {
+  buildPlatformFilter();
+  allSpaces = Object.keys(SPACE_PLATFORM_MAP)
+    .map(k => ({ key: k, name: SPACE_NAME_MAP[k] || k, platforms: SPACE_PLATFORM_MAP[k] }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  renderSpaceList();
+  loadSpaces();
+  bindEvents();
+
+  var urlParams = new URLSearchParams(window.location.search);
+  var q = urlParams.get('q') || '';
+  var incomingSpace = urlParams.get('space') || '';
+
+  if (incomingSpace && SPACE_PLATFORM_MAP[incomingSpace]) {
+    selectedSpaces.add(incomingSpace);
+    renderSpaceList();
+    document.getElementById('spaceClear').classList.add('visible');
+    var bannerSpaceName = SPACE_NAME_MAP[incomingSpace] || incomingSpace;
+    document.getElementById('spaceBannerName').textContent = bannerSpaceName;
+    document.getElementById('spaceBanner').style.display = 'flex';
+    document.getElementById('spaceBannerExpand').addEventListener('click', function() {
+      selectedSpaces.clear();
+      renderSpaceList();
+      document.getElementById('spaceClear').classList.remove('visible');
+      document.getElementById('spaceBanner').style.display = 'none';
+      if (currentQuery) triggerSearch(currentQuery, true);
+    });
+  }
+
+  if (q) {
+    document.getElementById('searchInput').value = q;
+    document.getElementById('searchClear').classList.add('visible');
+    triggerSearch(q, true);
+  }
+}
+
+const SPACE_NAME_MAP = {
+  "7TFJ":"7pace Timetracker for Jira","7TFM":"7pace Timetracker for monday.com",
+  "TBL":"Advanced Tables for Confluence","atdc":"Advanced Tables for Confluence (DC)",
+  "ABTB":"Agile Board Template Builder for Jira","ScrumPrint":"Agile Cards - Print Issues from Jira",
+  "JPP":"Agile Poker for Jira","ANNOUNCE":"Announcer","AIPC":"Assets and Inventory Plugin for Jira",
+  "AIP":"Assets and Inventory Plugin for Jira (DC)","AW":"Autowatch for Jira",
+  "CACHE":"Cache for Confluence","CR":"Canned Responses Pro for Jira",
+  "CT":"Canned Responses Pro for Jira (DC)","CHAT":"Chat for Jira Service Management",
+  "JCPP":"Clone Plus for Jira","CBCCL":"Comala Boards for Confluence",
+  "CBCSL":"Comala Boards for Confluence (DC)","C4J":"Comala Canvas for Jira",
+  "CDALS":"Comala Document Approval (DC)","CDCCL":"Comala Document Control",
+  "COMALACDCLS":"Comala Document Control (DC)","CDMC":"Comala Document Management",
+  "CDML":"Comala Document Management (DC)","CPCL":"Comala Publishing",
+  "AHP":"Comala Publishing (DC)","CRCCL":"Comala Read Confirmations",
+  "CTFCC":"Composition Tabs for Confluence","CTFCSM":"Composition Tabs for Confluence (DC)",
+  "CMJ":"Configuration Manager for Jira","CSOAP":"Confluence CLI",
+  "CCSFCONFC":"Connector for Salesforce & Confluence","CSFJIRA":"Connector for Salesforce & Jira",
+  "SFJSDC":"Contact Views for Salesforce & JSM","CPT":"Copy Page Tree",
+  "COPYSP":"Copy Space for Confluence","CSOT":"Create on Transition for Jira",
+  "DELGROUPS":"Delegated Group Management","PCFJ":"Delegated Project Creator for Jira",
+  "DFS":"Docs+ for Slack and Confluence","EASYF":"Easy Forms for Confluence",
+  "EIFJC":"Easy Integrations for Jira","EI4J":"Easy Integrations for Jira (DC)",
+  "ENH":"Easy Numbered Headings","JEPC":"Enhancer Plugin for Jira",
+  "JEP":"Enhancer Plugin for Jira (DC)","XL":"Excel for Confluence",
+  "FOX":"Foxly","GFJ":"Gaia for Jira","GMFC":"GitHub Macros for Confluence",
+  "GCC":"Issue Events: Google Calendar for Jira","HFS":"HelpDesk+ for Slack",
+  "HFMT":"HelpDesk+ for Microsoft Teams","HTML":"HTML for Confluence",
+  "HTMLM":"HTML Macro for Confluence Cloud","IMG":"Image Slider for Confluence",
+  "IMC":"Issue Matrix for Jira","ILV":"Issue Matrix for Jira (DC)",
+  "JCLI":"Jira CLI","JCLIP":"Run CLI Actions in Jira",
+  "JIFS":"Jira & Slack Integration+","JIFMT":"Microsoft Teams Integration+ for Jira",
+  "LM":"LaTeX Math","LINC":"Linking for Confluence","LINS":"Linking for Confluence (DC)",
+  "CMSP":"Macro Security for Confluence","MARKDOWN":"Markdown for Confluence",
+  "ME":"MultiExcerpt","NEWS":"News Teaser for Confluence",
+  "NC":"Numbered Captions","NH":"Numbered Headings",
+  "OCTO":"Octo","OFJ":"OKR for Jira","PAFC":"Page Approval for Confluence",
+  "PAFS":"Page Approval for Confluence (DC)","PP":"Planning Poker",
+  "POLL":"Polls for Confluence","APBCFJ":"Power BI Connector for Jira",
+  "DBCF":"Power Database Fields","UTIL":"Power Utilities for Jira",
+  "PCJ":"Project Configurator for Jira","PE":"Prometheus Exporter PRO",
+  "SFPUBC":"Publisher for Confluence to Salesforce","RFC":"Reporting for Confluence",
+  "REPS":"Reporting for Confluence (DC)","ART":"Reports and Timesheets for Jira",
+  "RUN":"Run Self-Service Reports for Confluence","SCAFC":"Scaffolding Forms & Templates",
+  "SCAFS":"Scaffolding Forms & Templates (DC)","SCRP":"Scripting for Confluence",
+  "SECC":"Security & Encryption for Confluence","SECS":"Security & Encryption for Confluence (DC)",
+  "SOURCE":"Source Editor for Confluence","SQL":"SQL for Confluence",
+  "SRV":"Surveys for Jira","SRTFJ":"Swanly Portfolio Roadmaps",
+  "ATCFJ":"Tableau Connector Pro for Jira","VISC":"Visibility for Confluence",
+  "VISS":"Visibility for Confluence (DC)","DLP":"BigPicture Suite",
+  "BIGGANTT":"BigGantt","SPM":"BigPicture Enterprise","NF":"Notifications for Jira",
+  "REDC":"Redirect Manager","CDACL":"Comala Document Access Control",
+  "TJC":"Table for Jira Cloud","PCFC":"Planner Config Cloud",
+  "LF":"Liveforms","ACLI":"Appfire CLI","MARK":"Markup Tools","CW":"Confluence Wiki",
+  "FD":"Flow","PSJC":"Power Scripts for Jira Cloud","JMWEC":"JMWE Cloud",
+  "JQLSEARCH":"JQL Search Extensions","JSUCLOUD":"Jira Suite Utilities Cloud",
+  "RFCDOC":"Rich Filters for Jira Dashboards","TTSC":"Time to SLA",
+  "7TFA":"7pace Timetracker for Azure DevOps","CMJC":"Configuration Manager for Jira Cloud",
+  "RDD":"Dashboard Hub Pro","COMALACM":"Comala Compliance Manager",
+  "GVIZ":"Google Visualization","KCF":"Knowledge Center for Confluence",
+  "SURVOTE":"Survey and Vote Macros","CFGDCS":"Connector for Google Drive & Confluence",
+  "TFS4JIRA":"TFS4JIRA","TTS":"Time to SLA (DC)","TSH":"Team Schedules & Hours",
+  "YACC":"Yet Another Commit Checker","JENK":"Webhook to Jenkins for Bitbucket",
+  "PAGE":"Pages for Bitbucket","SNIP":"Snippets for Bitbucket",
+  "JMCF":"Jira Misc Custom Fields","JMWE":"Jira Misc Workflow Extensions",
+  "POKERADO":"Planning Poker (Pokerado)","BCLI":"Bamboo CLI",
+  "CJSM":"Canned Responses for JSM","ACDC":"Agile Cards (DC)","APDC":"Agile Poker (DC)",
+  "BPEdc":"BigPicture Enterprise (DC)","GRAPH":"Charts & Graphs for Bitbucket",
+  "SCLI":"Bitbucket CLI","CVP":"Visio for Confluence","TBLSORT":"Advanced Tables (DC)",
+  "SDC":"Scaffolding (DC)","SPACE":"Spacetree for Confluence","EDITOR":"Power Editor for Bitbucket",
+  "CRU":"Crucible Review Hook","DADMIN":"Delegated Project Admin Pro",
+  "PSJ":"Power Scripts for Jira (DC)","PSCONF":"Power Scripts for Confluence (DC)",
+  "PA":"Power Admin for Jira","SCC":"Salesforce Connector Cloud",
+  "CCLI":"Run CLI Actions in Confluence","CLSL":"Comala Lifecycle SL",
+  "IC":"Inline Comments","RFP":"Rich Filters (DC)",
+  "RFTT":"Rich Filters Time Tracking","RFSD":"Rich Filters Service Management",
+  "RFPDF":"Rich Filters PDF Reports","JMCFC":"Jira Misc Custom Fields Cloud",
+  "dataplane":"Dataplane Reports for Jira",
+};
+
+function spaceName(key, apiName) {
+  if (apiName && apiName !== key && !/^[A-Z0-9_]+$/.test(apiName)) return apiName;
+  return SPACE_NAME_MAP[key] || apiName || key;
+}
+
+async function loadSpaces() {
+  try {
+    const res = await fetch(`${BASE_URL}/rest/api/space?limit=500&type=global&status=current`, {
+      credentials: 'same-origin', headers: { accept: 'application/json' }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const apiSpaces = (data.results || []).map(s => ({
+      key: s.key, name: spaceName(s.key, s.name), platforms: SPACE_PLATFORM_MAP[s.key] || []
+    }));
+    const apiKeys = new Set(apiSpaces.map(s => s.key));
+    const extraSpaces = Object.keys(SPACE_PLATFORM_MAP)
+      .filter(k => !apiKeys.has(k))
+      .map(k => ({ key: k, name: SPACE_NAME_MAP[k] || k, platforms: SPACE_PLATFORM_MAP[k] }));
+    allSpaces = [...apiSpaces, ...extraSpaces].sort((a, b) => a.name.localeCompare(b.name));
+  } catch {
+    allSpaces = Object.keys(SPACE_PLATFORM_MAP)
+      .map(k => ({ key: k, name: SPACE_NAME_MAP[k] || k, platforms: SPACE_PLATFORM_MAP[k] }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+  renderSpaceList();
+}
+
+function buildPlatformFilter() {
+  const list = document.getElementById('platformList');
+  list.innerHTML = PLATFORMS.map(p => `
+    <li class="platform-item">
+      <label>
+        <input class="filter-cb" type="checkbox" value="${p.id}">
+        <span class="platform-dot"></span>
+        <span>${p.label}</span>
+      </label>
+    </li>`).join('');
+  list.querySelectorAll('input').forEach(cb => cb.addEventListener('change', () => {
+    cb.checked ? selectedPlatforms.add(cb.value) : selectedPlatforms.delete(cb.value);
+    document.getElementById('platformClear').classList.toggle('visible', selectedPlatforms.size > 0);
+    renderSpaceList(); updateActiveFilters();
+    if (currentQuery) triggerSearch(currentQuery, true);
+  }));
+}
+
+document.getElementById('platformClear').addEventListener('click', () => {
+  selectedPlatforms.clear();
+  document.querySelectorAll('#platformList input').forEach(cb => cb.checked = false);
+  document.getElementById('platformClear').classList.remove('visible');
+  renderSpaceList(); updateActiveFilters();
+  if (currentQuery) triggerSearch(currentQuery, true);
+});
+
+function renderSpaceList() {
+  const list = document.getElementById('spaceList');
+  const visible = selectedPlatforms.size > 0
+    ? allSpaces.filter(s => s.platforms.some(p => selectedPlatforms.has(p)))
+    : allSpaces;
+  [...selectedSpaces].forEach(k => { if (!visible.find(s => s.key === k)) selectedSpaces.delete(k); });
+  list.innerHTML = visible.map(s => `
+    <li class="space-item">
+      <label>
+        <input class="filter-cb" type="checkbox" value="${s.key}" ${selectedSpaces.has(s.key) ? 'checked' : ''}>
+        <span class="space-check"></span>
+        <span class="space-name">${esc(s.name)}</span>
+      </label>
+    </li>`).join('');
+  list.querySelectorAll('input').forEach(cb => cb.addEventListener('change', () => {
+    cb.checked ? selectedSpaces.add(cb.value) : selectedSpaces.delete(cb.value);
+    document.getElementById('spaceClear').classList.toggle('visible', selectedSpaces.size > 0);
+    updateActiveFilters();
+    if (currentQuery) triggerSearch(currentQuery, true);
+  }));
+  document.getElementById('spaceClear').classList.toggle('visible', selectedSpaces.size > 0);
+}
+
+const spaceClearBtn = document.getElementById('spaceClear');
+if (spaceClearBtn) spaceClearBtn.addEventListener('click', () => {
+  selectedSpaces.clear();
+  document.querySelectorAll('#spaceList input').forEach(cb => cb.checked = false);
+  if (spaceClearBtn) spaceClearBtn.classList.remove('visible');
+  updateActiveFilters();
+  if (currentQuery) triggerSearch(currentQuery, true);
+});
+
+function updateActiveFilters() {
+  const container = document.getElementById('activeFilters');
+  const tags = [];
+  selectedPlatforms.forEach(id => { const p = PLATFORMS.find(x => x.id === id); if (p) tags.push({ label: p.label, type: 'platform', id }); });
+  selectedSpaces.forEach(key => { const s = allSpaces.find(x => x.key === key); tags.push({ label: s ? s.name : key, type: 'space', id: key }); });
+  if (!tags.length) { container.innerHTML = ''; return; }
+  container.innerHTML = tags.map(t => `<span class="filter-tag" data-type="${t.type}" data-id="${esc(t.id)}">${esc(t.label)}<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>`).join('');
+  container.querySelectorAll('.filter-tag').forEach(tag => tag.addEventListener('click', () => {
+    const { type, id } = tag.dataset;
+    if (type === 'platform') {
+      selectedPlatforms.delete(id);
+      const cb = document.querySelector(`#platformList input[value="${id}"]`);
+      if (cb) cb.checked = false;
+      document.getElementById('platformClear').classList.toggle('visible', selectedPlatforms.size > 0);
+      renderSpaceList();
+    } else {
+      selectedSpaces.delete(id);
+      const cb = document.querySelector(`#spaceList input[value="${id}"]`);
+      if (cb) cb.checked = false;
+      document.getElementById('spaceClear').classList.toggle('visible', selectedSpaces.size > 0);
+    }
+    updateActiveFilters();
+    if (currentQuery) triggerSearch(currentQuery, true);
+  }));
+}
+
+// ── FIX 2: Restore scroll lock that Refined's native search dialog adds ──
+function restoreScroll() {
+  document.documentElement.style.removeProperty('overflow');
+  document.body.style.removeProperty('overflow');
+  document.documentElement.style.removeProperty('height');
+  document.body.style.removeProperty('height');
+}
+
+function bindEvents() {
+  const input = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('searchClear');
+  input.addEventListener('input', () => {
+    const val = input.value.trim();
+    clearBtn.classList.toggle('visible', val.length > 0);
+    clearTimeout(debounceTimer);
+    if (!val) { showEmpty(); currentQuery = ''; return; }
+    debounceTimer = setTimeout(() => triggerSearch(val, true), 350);
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { clearTimeout(debounceTimer); const val = input.value.trim(); if (val) triggerSearch(val, true); }
+  });
+  // Restore scroll when user clicks away from the search input
+  input.addEventListener('blur', () => {
+    setTimeout(restoreScroll, 50);
+  });
+  document.getElementById('searchEnter').addEventListener('click', () => { clearTimeout(debounceTimer); const val = input.value.trim(); if (val) triggerSearch(val, true); else input.focus(); });
+  clearBtn.addEventListener('click', () => {
+    input.value = ''; clearBtn.classList.remove('visible'); showEmpty(); currentQuery = ''; input.focus();
+    restoreScroll();
+  });
+  document.getElementById('loadMoreBtn').addEventListener('click', () => { if (currentQuery) fetchResults(currentQuery, currentStart); });
+
+  // Also restore scroll on any click outside the search area
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) {
+      restoreScroll();
+    }
+  });
+}
+
+function triggerSearch(query, reset = false) {
+  currentRawQuery = query;
+  query = expandAcronym(query);
+  currentQuery = query;
+  if (reset) {
+    currentStart = 0;
+    totalResults = 0;
+    const btn = document.getElementById('exploreAiBtn');
+    if (btn) btn.classList.remove('visible');
+    closeRqPanel();
+  }
+  fetchResults(query, currentStart);
+}
+
+async function fetchResults(query, start) {
+  if (isLoading) return;
+  isLoading = true;
+  if (start === 0) showLoading();
+
+  let spaceKeys;
+  if (selectedSpaces.size > 0) spaceKeys = [...selectedSpaces];
+  else if (selectedPlatforms.size > 0) spaceKeys = allSpaces.filter(s => s.platforms.some(p => selectedPlatforms.has(p))).map(s => s.key);
+  else spaceKeys = allSpaces.map(s => s.key);
+
+  if (!spaceKeys.length) { renderResults([], true); updateCount(0, 0); toggleLoadMore(false); isLoading = false; return; }
+
+  const q = JSON.stringify(query);
+  const cql = `space.key in (${spaceKeys.map(k => `"${k}"`).join(',')}) AND (type in (page,blogpost,embed,folder)) AND (siteSearch ~ ${q})`;
+  const params = new URLSearchParams({ expand: 'content.space', cql, limit: PAGE_SIZE, start });
+
+  try {
+    const res = await fetch(`${BASE_URL}/rest/api/search?${params}`, { credentials: 'same-origin', headers: { accept: 'application/json' } });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    totalResults = data.totalSize || 0;
+    const newStart = start + (data.results?.length || 0);
+    currentStart = newStart;
+    renderResults(data.results || [], start === 0);
+    if (start === 0 && data.results && data.results.length > 0) triggerRelatedQuestions(query);
+    updateCount(totalResults, newStart);
+    toggleLoadMore(newStart < totalResults);
+  } catch { showError(); }
+  finally { isLoading = false; }
+}
+
+function buildExternalCard(app) {
+  const plat = PLATFORMS.find(p => app.platforms.includes(p.id));
+  const badge = plat ? `<span class="platform-badge ${plat.badgeClass}">${plat.label}</span>` : '';
+  return `<a href="${app.url}" class="result-card external-card" target="_blank" rel="noreferrer">
+    <div class="card-top">
+      <span class="type-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 8.5h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+      <span class="card-title">${esc(app.name)}<span class="external-badge">External</span></span>
+    </div>
+    <div class="card-excerpt">${esc(app.description)}</div>
+    <div class="card-meta">${badge}</div>
+  </a>`;
+}
+
+function getExternalMatches(query) {
+  if (!query) return [];
+  const q = query.toLowerCase();
+  const raw = (currentRawQuery || '').toLowerCase();
+  return EXTERNAL_APPS.filter(app => {
+    const name = app.name.toLowerCase();
+    return name.includes(q) || name.includes(raw) ||
+      app.keywords.some(k => k.includes(q) || q.includes(k) || k.includes(raw) || raw.includes(k));
+  });
+}
+
+function renderResults(results, replace) {
+  const area = document.getElementById('resultsArea');
+  const externalCards = replace ? getExternalMatches(currentQuery).map(buildExternalCard).join('') : '';
+  if (replace && !results.length && !externalCards) {
+    area.innerHTML = `<div class="state-box"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><h3>No results found</h3><p>Try different keywords or remove some filters.</p></div>`;
+    return;
+  }
+  const cards = results.map((r, i) => buildCard(r, i)).join('');
+  if (replace) { area.innerHTML = `<div class="results-list">${externalCards}${cards}</div>`; }
+  else { area.querySelector('.results-list')?.insertAdjacentHTML('beforeend', cards); }
+}
+
+function buildCard(result, idx) {
+  const content   = result.content || {};
+  const spaceKey  = content.space?.key || '';
+  const sName     = content.space?.name || result.resultGlobalContainer?.title || '';
+  const type      = content.type || 'page';
+  const url       = resolveUrl(result);
+  const delay     = idx < 10 ? `animation-delay:${idx*30}ms` : '';
+  const title     = hlToMark(esc(result.title || content.title || 'Untitled'));
+  const excerpt   = hlToMark(esc(result.excerpt || ''));
+  const platforms = SPACE_PLATFORM_MAP[spaceKey] || [];
+  const pBadges   = platforms.map(pid => {
+    const p = PLATFORMS.find(x => x.id === pid);
+    return p ? `<span class="platform-badge ${p.badgeClass}">${p.label}</span>` : '';
+  }).join('');
+
+  return `<a href="${url}" class="result-card" target="_top" style="${delay}">
+    <div class="card-header"><span class="card-icon">${typeIcon(type)}</span><span class="card-title">${title}</span></div>
+    ${excerpt ? `<div class="card-excerpt">${excerpt}</div>` : ''}
+    <div class="card-meta">
+      <span class="meta-badge">${type.charAt(0).toUpperCase()+type.slice(1)}</span>
+      ${sName ? `<span class="meta-sep">·</span><span class="meta-space">${esc(sName)}</span>` : ''}
+      ${pBadges ? `<span class="meta-sep">·</span>${pBadges}` : ''}
+    </div>
+  </a>`;
+}
+
+function resolveUrl(result) {
+  const raw = result.url || result.content?._links?.webui || '';
+  if (!raw) return '#';
+  if (raw.startsWith('http')) return raw;
+  const pm = raw.match(/^\/spaces\/([^/]+)\/pages\/(\d+)(\/.*)?$/);
+  if (pm) return `${BASE_URL}/space/${pm[1]}/${pm[2]}${pm[3]||''}`;
+  const om = raw.match(/^\/spaces\/([^/]+)\/overview/);
+  if (om) return `${BASE_URL}/space/${om[1]}`;
+  const sm = raw.match(/^\/spaces\/([^/]+)\/(.+)$/);
+  if (sm) return `${BASE_URL}/space/${sm[1]}/${sm[2]}`;
+  return BASE_URL + raw;
+}
+
+const hlToMark = s => s.replace(/@@@hl@@@/g,'<mark>').replace(/@@@endhl@@@/g,'</mark>');
+const typeIcon = t => t==='blogpost'
+  ? `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 8.5h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`
+  : t==='folder'
+  ? `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.3"/></svg>`
+  : `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 5h4M6 8h4M6 11h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+
+function updateCount(total, shown) {
+  document.getElementById('resultsCount').innerHTML = total > 0
+    ? `Showing <strong>${shown}</strong> of <strong>${total}</strong> result${total!==1?'s':''}`
+    : '';
+}
+const toggleLoadMore = show => document.getElementById('loadMoreWrap').style.display = show ? 'block' : 'none';
+const showLoading = () => { document.getElementById('resultsArea').innerHTML=`<div class="state-box"><div class="spinner"></div><p>Searching…</p></div>`; toggleLoadMore(false); document.getElementById('resultsCount').innerHTML=''; };
+const showEmpty   = () => { document.getElementById('resultsArea').innerHTML=`<div class="state-box"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><h3>Start searching</h3><p>Type a keyword above to search across all documentation spaces.</p></div>`; toggleLoadMore(false); document.getElementById('resultsCount').innerHTML=''; };
+const showError   = () => { document.getElementById('resultsArea').innerHTML=`<div class="state-box"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><h3>Something went wrong</h3><p>Could not fetch results. Make sure you're logged in and try again.</p></div>`; };
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+init();
+
+// Kill Refined's section/wrapper padding around this page
+(function killPadding() {
+  function strip() {
+    var el = document.querySelector('.page-shell');
+    while (el && el !== document.body) {
+      el.style.setProperty('padding-bottom', '0', 'important');
+      el.style.setProperty('margin-bottom', '0', 'important');
+      el = el.parentElement;
+    }
+    document.body.style.setProperty('padding-bottom', '0', 'important');
+    document.body.style.setProperty('margin-bottom', '0', 'important');
+  }
+  strip();
+  setTimeout(strip, 300);
+  setTimeout(strip, 1000);
+})();
+
+// ── Related Questions (Refined AI) ──
+const rqCache = new Map();
+var rqCurrentQuery = null;
+
+function getRefinedCsrf() {
+  var el = document.querySelector('[name="csrf-token"], [data-csrf], #csrf-token');
+  return el ? (el.content || el.value || el.getAttribute('data-csrf') || '') : '';
+}
+
+function refinedPost(body) {
+  return fetch('/rest/latest/refined-ai/generate-questions', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', 'accept': 'application/json', 'csrf-token': getRefinedCsrf() },
+    body: JSON.stringify({ clientType: 'confluence', browserLanguageCode: navigator.language || 'en', ...body })
+  });
+}
+
+async function prefetchAnswer(query, question) {
+  const entry = rqCache.get(query);
+  if (!entry) return;
+  try {
+    const parsed = await fetchAnswer(question, query, entry.sessionId);
+    entry.answers[question] = parsed;
+  } catch(e) {
+    entry.answers[question] = null;
+  }
+}
+
+async function fetchRelatedQuestions(query) {
+  if (rqCache.has(query)) return rqCache.get(query).questions;
+  try {
+    const res = await refinedPost({ question: query });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const sessionId = data.sessionId || null;
+    const questions = [...data.answer.matchAll(/<question>([^<]+)<\/question>/g)].map(m => m[1].trim());
+    if (!questions.length) return null;
+    const entry = { sessionId, questions, answers: {} };
+    rqCache.set(query, entry);
+    questions.forEach(q => prefetchAnswer(query, q));
+    return questions;
+  } catch(e) { return null; }
+}
+
+function renderAnswer(el, parsed) {
+  let html = `<div class="rq-answer-text">${esc(parsed.text).replace(/\n/g, '<br>')}</div>`;
+  if (parsed.references && parsed.references.length) {
+    html += `<div class="rq-answer-refs">`;
+    parsed.references.forEach(ref => {
+      const url = `${BASE_URL}/space/${ref.spaceKey}/${ref.pageId}`;
+      html += `<a href="${url}" class="rq-answer-ref" target="_top">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 5h4M6 8h4M6 11h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        ${esc(ref.title)}
+      </a>`;
+    });
+    html += `</div>`;
+  }
+  el.innerHTML = html;
+}
+
+async function fetchAnswer(q, originalQuery, sessionId) {
+  const res = await fetch('/rest/latest/refined-ai/query', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', 'accept': 'application/json', 'csrf-token': getRefinedCsrf() },
+    body: JSON.stringify({
+      question: q,
+      originalQuestion: originalQuery || q,
+      sessionId: sessionId || null,
+      kbArticleReference: null,
+      clientType: 'confluence',
+      browserLanguageCode: navigator.language || 'en'
+    })
+  });
+  if (!res.ok) throw new Error();
+  const text = await res.text();
+  const refMatch = text.match(/(\{"references":.*\})$/s);
+  const answerText = refMatch ? text.slice(0, refMatch.index).trim() : text.trim();
+  let references = [];
+  if (refMatch) {
+    try { references = JSON.parse(refMatch[1]).references || []; } catch(e) {}
+  }
+  return { text: answerText, references };
+}
+
+function openRqPanel(query, questions) {
+  const body = document.getElementById('rqBody');
+  const panel = document.getElementById('rqPanel');
+  const overlay = document.getElementById('rqOverlay');
+  if (!body || !panel) return;
+
+  body.innerHTML = questions.map((q, i) => `
+    <button class="rq-question-btn" data-idx="${i}" data-q="${esc(q)}">${esc(q)}</button>
+    <div class="rq-answer" id="rq-answer-${i}"></div>
+  `).join('');
+
+  body.querySelectorAll('.rq-question-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const idx = this.dataset.idx;
+      const q = this.dataset.q;
+      const answerEl = document.getElementById('rq-answer-' + idx);
+      if (!answerEl) return;
+
+      if (this.classList.contains('active')) {
+        this.classList.remove('active');
+        answerEl.classList.remove('visible');
+        return;
+      }
+      body.querySelectorAll('.rq-question-btn').forEach(b => b.classList.remove('active'));
+      body.querySelectorAll('.rq-answer').forEach(a => a.classList.remove('visible'));
+      this.classList.add('active');
+      answerEl.classList.add('visible');
+
+      const entry = rqCache.get(query);
+      const cached = entry && entry.answers[q];
+
+      if (cached) {
+        renderAnswer(answerEl, cached);
+        return;
+      }
+
+      answerEl.innerHTML = '<div class="rq-answer-loading"><div class="spinner"></div>Generating answer…</div>';
+      try {
+        const parsed = await fetchAnswer(q, query, entry ? entry.sessionId : null);
+        if (entry) entry.answers[q] = parsed;
+        renderAnswer(answerEl, parsed);
+      } catch(e) {
+        answerEl.textContent = 'Could not load answer. Try searching for this question directly.';
+      }
+    });
+  });
+
+  panel.classList.add('open');
+  overlay.classList.add('visible');
+}
+
+function closeRqPanel() {
+  const panel = document.getElementById('rqPanel');
+  const overlay = document.getElementById('rqOverlay');
+  if (panel) panel.classList.remove('open');
+  if (overlay) overlay.classList.remove('visible');
+}
+
+// ── FIX 1: Use closest() so clicking the SVG inside the button still works ──
+document.addEventListener('click', function(e) {
+  if (!e.target) return;
+  if (e.target.closest('#rqClose')) { closeRqPanel(); return; }
+  if (e.target.id === 'rqOverlay') { closeRqPanel(); return; }
+  if (e.target.id === 'exploreAiBtn' || e.target.closest('#exploreAiBtn')) openRqPanelOrLoading();
+});
+
+function openRqPanelOrLoading() {
+  const body = document.getElementById('rqBody');
+  const panel = document.getElementById('rqPanel');
+  const overlay = document.getElementById('rqOverlay');
+  if (!body || !panel) return;
+
+  const query = rqCurrentQuery;
+  const entry = query && rqCache.get(query);
+
+  if (entry && entry.questions.length) {
+    openRqPanel(query, entry.questions);
+    return;
+  }
+
+  body.innerHTML = `
+    <div class="rq-loading">
+      <div class="rq-skeleton"></div>
+      <div class="rq-skeleton" style="opacity:.7"></div>
+      <div class="rq-skeleton" style="opacity:.5"></div>
+    </div>`;
+  panel.classList.add('open');
+  overlay.classList.add('visible');
+
+  openRqPanel.__onReady = (q, questions) => {
+    if (panel.classList.contains('open')) openRqPanel(q, questions);
+  };
+}
+
+async function triggerRelatedQuestions(query) {
+  const btn = document.getElementById('exploreAiBtn');
+  if (!btn) return;
+
+  openRqPanel.__onReady = null;
+  rqCurrentQuery = query;
+
+  btn.classList.add('visible');
+
+  const questions = await fetchRelatedQuestions(query);
+
+  if (rqCurrentQuery !== query) return;
+
+  if (!questions || !questions.length) {
+    btn.classList.remove('visible');
+    return;
+  }
+
+  if (typeof openRqPanel.__onReady === 'function') {
+    openRqPanel.__onReady(query, questions);
+  }
+}
+
+</script>
+<div style="display:none"><ul id="spaceList"></ul><button id="spaceClear"></button></div>
+</body>
+</html>
