@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>App Directory — Appfire</title>
+<link rel="stylesheet" href="https://use.typekit.net/eah5sfj.css">
+  <style>
+    :root {
+      --font: "area", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --bg:            #0b0f16;
+      --bg-2:          #0a0d13;
+      --border:        rgba(215,222,234,.14);
+      --border-strong: rgba(215,222,234,.26);
+      --text:          #ffffff;
+      --text-muted:    rgba(255,255,255,.5);
+      --shadow-sm:     0 2px 8px rgba(0,0,0,.18);
+      --shadow-md:     0 8px 28px rgba(0,0,0,.35);
+      --radius:        18px;
+      --primary-soft:  rgba(47,107,255,.18);
+      --color-ac:  #397BFF;
+      --color-adc: #A78BFA;
+      --color-ms:  #FF8A5B;
+      --color-sf:  #63E6E2;
+      --color-sl:  #FFE08A;
+      --color-mo:  #6875f5;
+      --color-sei: #22C55E;
+      --color-nt:  rgba(215,222,234,.16);
+    }
+
+    body, .card p, .card h3, .kb-card p, .kb-card h3,
+.card-excerpt, .results-count, .meta-space,
+.sidebar-heading, .space-name, .card-title,
+.hint, .meta, .name {
+  font-weight: 700 !important;
+}
+
+.name { font-size: .9rem !important; }
+    
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { font-family: var(--font); color: #fff; background-color: var(--bg); }
+    a { color: inherit; text-decoration: none; }
+    #appfire-directory { font-family: var(--font); }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 0 20px 80px; }
+    .controls {
+      background: linear-gradient(180deg, rgba(16,26,42,.92), rgba(15,22,35,.92));
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px; box-shadow: var(--shadow-sm); backdrop-filter: blur(6px);
+    }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    .search {
+      flex: 1 1 340px; display: flex; gap: 10px; align-items: center;
+      background: rgba(9,10,15,1); border-radius: 500px; padding: 10px 12px;
+    }
+    .search input {
+      width: 100%; border: none; outline: none; font-size: 14px;
+      background: transparent; color: #fff; font-family: var(--font);
+    }
+    .search input::placeholder { color: rgba(255,255,255,.5); }
+    .btn {
+      border: 1px solid var(--border); background: rgba(215,222,234,.08); color: #fff;
+      border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 600;
+      font-family: var(--font); cursor: pointer;
+      transition: transform .12s ease, background .15s ease; white-space: nowrap;
+    }
+    .btn:hover { background: rgba(215,222,234,.12); transform: translateY(-1px); }
+    .toggle { display: flex; gap: 10px; align-items: center; flex: 0 0 auto; color: rgba(255,255,255,.6); font-size: 13px; }
+    .toggle strong { color: #fff; }
+    .toggle .pill {
+      display: inline-flex; border: 1px solid var(--border); border-radius: 999px;
+      overflow: hidden; background: rgba(12,19,32,.55);
+    }
+    .toggle button {
+      border: none; background: transparent; padding: 9px 12px; cursor: pointer;
+      font-weight: 700; font-size: 12px; font-family: var(--font);
+      color: #fff; transition: background .18s ease, color .18s ease;
+    }
+    .toggle button.is-active { background: var(--primary-soft); color: #fff; }
+    .filters { margin-top: 14px; display: flex; gap: 8px 24px; flex-wrap: wrap; align-items: center; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 9px;
+      cursor: pointer; user-select: none; color: #fff;
+    }
+    .chip input { display: none; }
+    .chip .check {
+      width: 14px; height: 14px; min-width: 14px; flex-shrink: 0;
+      border-radius: 2px; border: 1px solid #4466FF;
+      background: transparent; display: inline-flex; align-items: center; justify-content: center;
+      transition: background .15s ease;
+    }
+    .chip input:checked ~ .check {
+      background: #4466FF;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: center; background-size: 9px 7px;
+    }
+    .chip .label-text { font-size: 13px; font-weight: 400; color: #fff; }
+    .chip:hover .label-text { color: #fff; }
+    .chip input:checked ~ .label-text { color: #fff; }
+    .meta { margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; color: rgba(255,255,255,.6) !important; font-size: 13px; }
+    .meta strong { color: #fff !important; }
+    .grid { margin-top: 8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 980px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+
+    /* Cards are no longer links — they're divs */
+    .card {
+      display: flex; flex-direction: column; background: rgba(12,17,28,.9);
+      border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow-sm); backdrop-filter: blur(6px);
+    }
+    .card-body { flex: 1; padding: 18px 18px 18px; }
+    .name { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; color: #fff !important; font-family: var(--font) !important; }
+    .tags { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* Tags are now links */
+    .tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; font-family: var(--font) !important;
+      border-radius: 0; padding: 3px 9px;
+      background: transparent; letter-spacing: .01em;
+      border: 1px solid rgba(215,222,234,.18); color: #ffffff;
+      text-decoration: none;
+      transition: background .15s ease, border-color .15s ease, transform .15s ease;
+    }
+    /* Non-linked tags (no href) */
+    .tag[href="#"], .tag:not([href]) { cursor: default; pointer-events: none; }
+
+    /* Arrow icon inside linked tags */
+    .tag .tag-arrow {
+      width: 9px; height: 9px; flex-shrink: 0; opacity: 0;
+      transition: opacity .15s ease, transform .15s ease;
+    }
+    .tag:hover .tag-arrow { opacity: 1; transform: translateX(2px); }
+
+    .tag.p-ac  { border-color: var(--color-ac);  color: #fff; }
+    .tag.p-adc { border-color: var(--color-adc); color: #fff; }
+    .tag.p-ms  { border-color: var(--color-ms);  color: #fff; }
+    .tag.p-sf  { border-color: var(--color-sf);  color: #fff; }
+    .tag.p-sl  { border-color: var(--color-sl);  color: #fff; }
+    .tag.p-mo  { border-color: var(--color-mo);  color: #fff; }
+    .tag.p-sei { border-color: var(--color-sei); color: #fff; }
+    .tag.p-nt  { border-color: var(--color-nt); }
+
+    .tag.p-ac:hover  { background: rgba(57,123,255,0.28);  border-color: #6b9fff; color: #fff; transform: translateY(-2px); }
+    .tag.p-adc:hover { background: rgba(167,139,250,0.28); border-color: #c4b0fd; color: #fff; transform: translateY(-2px); }
+    .tag.p-ms:hover  { background: rgba(255,138,91,0.28);  border-color: #ffaa80; color: #fff; transform: translateY(-2px); }
+    .tag.p-sf:hover  { background: rgba(99,230,226,0.28);  border-color: #8eecea; color: #fff; transform: translateY(-2px); }
+    .tag.p-sl:hover  { background: rgba(255,224,138,0.28); border-color: #ffe9a0; color: #fff; transform: translateY(-2px); }
+    .tag.p-mo:hover  { background: rgba(104,117,245,0.28); border-color: #9099f7; color: #fff; transform: translateY(-2px); }
+    .tag.p-sei:hover { background: rgba(34,197,94,0.28);   border-color: #4ade80; color: #fff; transform: translateY(-2px); }
+
+    .empty { margin-top: 18px; color: rgba(255,255,255,.6); }
+    .hint { margin: 10px 0 0; font-size: 13px; color: rgba(255,255,255,.55) !important; line-height: 1.5; }
+
+    
+  </style>
+</head>
+<body>
+<div id="appfire-directory">
+  <div class="wrap">
+    <div class="controls">
+      <div class="row">
+        <div class="search" role="search">
+          <input id="afd-q" type="search" placeholder="Filter apps…" autocomplete="off" />
+          <button class="btn" id="afd-clear">Clear</button>
+        </div>
+        <div class="toggle" aria-label="Match mode">
+          <strong>Match:</strong>
+          <div class="pill" role="group">
+            <button type="button" id="afd-modeAnd" class="is-active">AND</button>
+            <button type="button" id="afd-modeOr">OR</button>
+          </div>
+        </div>
+      </div>
+      <div class="filters" aria-label="Platform filters">
+        <label class="chip"><input type="checkbox" class="afd-filter" value="atlassian-cloud" /><span class="check"></span><span class="label-text">Atlassian Cloud</span></label>
+        <label class="chip"><input type="checkbox" class="afd-filter" value="atlassian-dc" /><span class="check"></span><span class="label-text">Atlassian Data Center</span></label>
+        <label class="chip"><input type="checkbox" class="afd-filter" value="microsoft" /><span class="check"></span><span class="label-text">Microsoft</span></label>
+        <label class="chip"><input type="checkbox" class="afd-filter" value="salesforce" /><span class="check"></span><span class="label-text">Salesforce</span></label>
+        <label class="chip"><input type="checkbox" class="afd-filter" value="slack" /><span class="check"></span><span class="label-text">Slack</span></label>
+        <label class="chip"><input type="checkbox" class="afd-filter" value="monday" /><span class="check"></span><span class="label-text">monday.com</span></label>
+        <label class="chip"><input type="checkbox" class="afd-filter" value="SEI" /><span class="check"></span><span class="label-text">Software Engineering Intelligence</span></label>
+      </div>
+      <div class="meta">
+        <div><strong id="afd-shown">0</strong> shown / <span id="afd-total">0</span> total</div>
+      </div>
+    </div>
+    <p class="hint" id="afd-hint">Filter by platform or search by app name, feature, or space key. Click a platform badge to go directly to that app's documentation.</p>
+    <div id="afd-grid" class="grid" aria-label="Apps"></div>
+    <div id="afd-empty" class="empty" hidden>No matches. Try clearing filters or changing OR/AND.</div>
+  </div>
+</div>
+
+<script>
+(function () {
+
+  var BASE_URL = "https://support.appfire.com/space/";
+
+  // Each platform entry in a tag can now carry its own spaceKey or externalUrl,
+  // overriding the card-level default. If neither is set on the platform entry,
+  // the card-level spaceKey is used.
+  //
+  // Structure:
+  //   name        — display name on card
+  //   spaceKey    — default space key (used if tag doesn't specify one)
+  //   externalUrl — overrides spaceKey for the whole card (used if tag doesn't specify)
+  //   platforms   — array of strings OR objects:
+  //                   string  → use card-level spaceKey/externalUrl
+  //                   object  → { id, spaceKey?, externalUrl?, label? }
+  //                             id is the platform key; spaceKey/externalUrl override card-level
+  //   keywords    — extra search text
+
+  var APPS = [
+    // ── 7pace: three separate platforms, each with its own space ──────────────
+    { name: "7pace Timetracker", platforms: [
+        { id: "atlassian-cloud", spaceKey: "7TFJ",  label: "Jira Cloud" },
+        { id: "microsoft",       spaceKey: "7TFA",  label: "Azure DevOps" },
+        { id: "monday",          spaceKey: "7TFM",  label: "monday.com" }
+      ], keywords: "7pace timetracker jira azure devops monday"
+    },
+
+    // ── Advanced Tables ───────────────────────────────────────────────────────
+    { name: "Advanced Tables for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "TBL" },
+        { id: "atlassian-dc",    spaceKey: "atdc" }
+      ]
+    },
+
+    // ── Agile Board Template Builder ─────────────────────────────────────────
+    { name: "Agile Board Template Builder for Jira", spaceKey: "ABTB", platforms: ["atlassian-dc"] },
+
+    // ── Agile Cards ───────────────────────────────────────────────────────────
+    { name: "Agile Cards – Print Issues from Jira", spaceKey: "ScrumPrint", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Agile Poker ───────────────────────────────────────────────────────────
+    { name: "Agile Poker for Jira", spaceKey: "JPP", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Announcer ─────────────────────────────────────────────────────────────
+    { name: "Announcer Apps", spaceKey: "ANNOUNCE", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Appfire CLI ───────────────────────────────────────────────────────────
+    { name: "Appfire Command Line Interface (CLI)", spaceKey: "ACLI", platforms: ["atlassian-cloud"] },
+
+    // ── Assets and Inventory Plugin ───────────────────────────────────────────
+    { name: "Assets and Inventory Plugin for Jira", platforms: [
+        { id: "atlassian-cloud", spaceKey: "AIPC" },
+        { id: "atlassian-dc",    spaceKey: "AIP" }
+      ]
+    },
+
+    // ── Autowatch ─────────────────────────────────────────────────────────────
+    { name: "Autowatch for Jira", spaceKey: "AW", platforms: ["atlassian-cloud"] },
+
+    // ── BigGantt ──────────────────────────────────────────────────────────────
+    { name: "BigGantt – Gantt Chart for Jira", spaceKey: "DLP", platforms: ["atlassian-cloud"], keywords: "biggantt gantt chart roadmap" },
+
+    // ── BigPicture ────────────────────────────────────────────────────────────
+    { name: "BigPicture – Project Management & PPM", spaceKey: "DLP", platforms: ["atlassian-cloud"] },
+
+    // ── BigPicture Enterprise ─────────────────────────────────────────────────
+    { name: "BigPicture Enterprise", platforms: [
+        { id: "atlassian-cloud", spaceKey: "SPM" },
+        { id: "atlassian-dc",    spaceKey: "DLP" }
+      ], keywords: "BigPicture Enterprise"
+    },
+
+    // ── BigTemplate ───────────────────────────────────────────────────────────
+    { name: "BigTemplate – Export to PDF, Word, Excel", spaceKey: "DLP", platforms: ["atlassian-cloud"] },
+
+    // ── Bitbucket CLI ─────────────────────────────────────────────────────────
+    { name: "Bitbucket Cloud Command Line Interface (CLI)", spaceKey: "BCCLI", platforms: ["atlassian-cloud"] },
+
+    // ── Cache for Confluence ──────────────────────────────────────────────────
+    { name: "Cache for Confluence", spaceKey: "CACHE", platforms: ["atlassian-cloud"] },
+
+    // ── Canned Responses ──────────────────────────────────────────────────────
+    { name: "Canned Responses Pro Templates for Jira", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CR" },
+        { id: "atlassian-dc",    spaceKey: "CT" }
+      ], keywords: "canned responses"
+    },
+
+    // ── Charts & Graphs for Bitbucket ─────────────────────────────────────────
+    { name: "Charts & Graphs for Bitbucket", spaceKey: "GRAPH", platforms: ["atlassian-cloud"] },
+
+    // ── Chat for JSM ─────────────────────────────────────────────────────────
+    { name: "Chat for Jira Service Management", spaceKey: "CHAT", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Clone Plus ────────────────────────────────────────────────────────────
+    { name: "Clone Plus for Jira", spaceKey: "JCPP", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Collapsible Dashboard Sidebar ────────────────────────────────────────
+    { name: "Collapsible Dashboard Sidebar", spaceKey: "CDS", platforms: ["atlassian-dc"] },
+
+    // ── Comala Boards ────────────────────────────────────────────────────────
+    { name: "Comala Boards for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CBCCL" },
+        { id: "atlassian-dc",    spaceKey: "CBCSL" }
+      ], keywords: "comala boards kanban task board confluence"
+    },
+
+    // ── Comala Canvas ────────────────────────────────────────────────────────
+    { name: "Comala Canvas for Jira", spaceKey: "C4J", platforms: ["atlassian-cloud", "atlassian-dc"],
+      keywords: "comala canvas whiteboard visual planning jira"
+    },
+
+    // ── Comala Document Approval ─────────────────────────────────────────────
+    { name: "Comala Document Approval", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CDACL" },
+        { id: "atlassian-dc",    spaceKey: "CDALS" }
+      ], keywords: "comala document approval workflow review sign off approve reject confluence"
+    },
+
+    // ── Comala Document Control ───────────────────────────────────────────────
+    { name: "Comala Document Control", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CDCCL" },
+        { id: "atlassian-dc",    spaceKey: "COMALACDCLS" }
+      ], keywords: "comala document control compliance version lifecycle policy procedure confluence"
+    },
+
+    // ── Comala Document Management ────────────────────────────────────────────
+    { name: "Comala Document Management", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CDMC" },
+        { id: "atlassian-dc",    spaceKey: "CDML" }
+      ], keywords: "comala document management workflow status review publish archive confluence"
+    },
+
+    // ── Comala Lists DC ───────────────────────────────────────────────────────
+    { name: "Comala Lists", spaceKey: "CLSL", platforms: ["atlassian-dc"],
+      keywords: "comala lists structured data confluence"
+    },
+
+    // ── Comala Metadata DC ────────────────────────────────────────────────────
+    { name: "Comala Metadata", spaceKey: "COMALACM", platforms: ["atlassian-dc"],
+      keywords: "comala metadata custom fields properties confluence"
+    },
+
+    // ── Comala Publishing ─────────────────────────────────────────────────────
+    { name: "Comala Publishing", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CPCL" },
+        { id: "atlassian-dc",    spaceKey: "AHP" }
+      ], keywords: "comala publishing publish draft live space confluence"
+    },
+
+    // ── Comala Read Confirmations ─────────────────────────────────────────────
+    { name: "Comala Read Confirmations", spaceKey: "CRCCL", platforms: ["atlassian-cloud"],
+      keywords: "comala read confirmations acknowledged policy training confluence"
+    },
+
+    // ── Composition Tabs ──────────────────────────────────────────────────────
+    { name: "Composition Tabs for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CTFCC" },
+        { id: "atlassian-dc",    spaceKey: "CTFCSM" }
+      ]
+    },
+
+    // ── Configuration Manager ─────────────────────────────────────────────────
+    { name: "Configuration Manager for Jira (CMJ)", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CMJC" },
+        { id: "atlassian-dc",    spaceKey: "CMJ" }
+      ], keywords: "CMJ migration"
+    },
+
+    // ── Configuration Manager Cloud Migration Tool ────────────────────────────
+    { name: "Configuration Manager Cloud Migration Tool", spaceKey: "CMT", platforms: ["atlassian-cloud"], keywords: "CMJ migration" },
+
+    // ── Confluence CLI ────────────────────────────────────────────────────────
+    { name: "Confluence Command Line Interface (CLI)", spaceKey: "CSOAP", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Connector for Google Drive & Confluence ───────────────────────────────
+    { name: "Connector for Google Drive & Confluence", spaceKey: "CFGDCS", platforms: ["atlassian-cloud"], keywords: "google drive confluence" },
+
+    // ── Connector for Salesforce & Confluence ────────────────────────────────
+    { name: "Connector for Salesforce & Confluence", spaceKey: "CCSFCONFC", platforms: ["atlassian-cloud", "salesforce"] },
+
+    // ── Connector for Salesforce & Jira ───────────────────────────────────────
+    { name: "Connector for Salesforce & Jira", platforms: [
+        { id: "atlassian-cloud", spaceKey: "CSFJIRA" },
+        { id: "atlassian-dc",    spaceKey: "CSFJIRA" },
+        { id: "salesforce",      spaceKey: "CSFJIRA" }
+      ]
+    },
+
+    // ── Contact Views for Salesforce & JSM ───────────────────────────────────
+    { name: "Contact Views for Salesforce & JSM", spaceKey: "SFJSDC", platforms: ["salesforce", "atlassian-cloud"] },
+
+    // ── Copy Page Tree ────────────────────────────────────────────────────────
+    { name: "Copy Page Tree", spaceKey: "CPT", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Copy Space ────────────────────────────────────────────────────────────
+    { name: "Copy Space for Confluence", spaceKey: "COPYSP", platforms: ["atlassian-cloud"] },
+
+    // ── Create on Transition ──────────────────────────────────────────────────
+    { name: "Create on Transition for Jira", spaceKey: "CSOT", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Crucible Review Hook ──────────────────────────────────────────────────
+    { name: "Crucible Review Hook for Bitbucket", spaceKey: "CRU", platforms: ["atlassian-dc"] },
+
+    // ── Dashboard Hub ─────────────────────────────────────────────────────────
+    { name: "Dashboard Hub", spaceKey: "RDD", platforms: ["atlassian-cloud"], keywords: "dashboard hub" },
+
+    // ── Database Exporter ────────────────────────────────────────────────────
+    { name: "Database Exporter for Jira Cloud", spaceKey: "ADEFJC", platforms: ["atlassian-cloud"] },
+
+    // ── Dataplane Reports ────────────────────────────────────────────────────
+    { name: "Dataplane Reports for Jira", spaceKey: "dataplane", platforms: ["atlassian-cloud"] },
+
+    // ── Delegated Group Management ────────────────────────────────────────────
+    { name: "Delegated Group Management", spaceKey: "DELGROUPS", platforms: ["atlassian-cloud"] },
+
+    // ── Delegated Project Admin Pro ───────────────────────────────────────────
+    { name: "Delegated Project Admin Pro for Jira", spaceKey: "DADMIN", platforms: ["atlassian-dc"] },
+
+    // ── Delegated Project Creator ─────────────────────────────────────────────
+    { name: "Delegated Project Creator", spaceKey: "PCFJ", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Easy Forms ───────────────────────────────────────────────────────────
+    { name: "Easy Forms for Confluence", spaceKey: "EASYF", platforms: ["atlassian-cloud"] },
+
+    // ── Easy Integrations ─────────────────────────────────────────────────────
+    { name: "Easy Integrations for Jira", platforms: [
+        { id: "atlassian-cloud", spaceKey: "EIFJC" },
+        { id: "atlassian-dc",    spaceKey: "EI4J" }
+      ]
+    },
+
+    // ── Easy Numbered Headings ────────────────────────────────────────────────
+    { name: "Easy Numbered Headings", spaceKey: "ENH", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Electronic Signatures ────────────────────────────────────────────────
+    { name: "Electronic Signatures", spaceKey: "ESF", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Enhancer Plugin ───────────────────────────────────────────────────────
+    { name: "Enhancer Plugin for Jira", platforms: [
+        { id: "atlassian-cloud", spaceKey: "JEPC" },
+        { id: "atlassian-dc",    spaceKey: "JEP" }
+      ]
+    },
+
+    // ── Excel for Confluence ──────────────────────────────────────────────────
+    { name: "Excel for Confluence", spaceKey: "XL", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Flow ─────────────────────────────────────────────────────────────────
+    { name: "Flow", spaceKey: "FD", platforms: ["SEI"] },
+
+    // ── Flow Board ────────────────────────────────────────────────────────────
+    { name: "Flow Board", spaceKey: "FB", platforms: ["atlassian-dc"] },
+
+    // ── Foxly ────────────────────────────────────────────────────────────────
+    { name: "Foxly Project Prioritization", spaceKey: "FOX", platforms: ["atlassian-cloud"], keywords: "foxly" },
+
+    // ── Gaia ─────────────────────────────────────────────────────────────────
+    { name: "Gaia for Jira – Project Template Manager", spaceKey: "GFJ", platforms: ["atlassian-dc"], keywords: "gaia project template" },
+
+    // ── Github Macros ─────────────────────────────────────────────────────────
+    { name: "Github Macros for Confluence", spaceKey: "GMFC", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Global SSO ────────────────────────────────────────────────────────────
+    { name: "Global SSO", spaceKey: "SSO", platforms: ["atlassian-dc"], keywords: "SSO SAML" },
+
+    // ── Graphviz Diagrams ─────────────────────────────────────────────────────
+    { name: "Graphviz Diagrams for Confluence", spaceKey: "GVIZ", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Hedge ─────────────────────────────────────────────────────────────────
+    { name: "Hedge", spaceKey: "HED", platforms: ["atlassian-cloud"], keywords: "risk management risk register risk matrix" },
+
+    // ── HelpDesk+ for Slack ───────────────────────────────────────────────────
+    { name: "HelpDesk+ for Slack", spaceKey: "HFS", platforms: ["atlassian-cloud", "atlassian-dc", "slack"], keywords: "helpdesk slack" },
+
+    // ── HelpDesk+ for Microsoft Teams ────────────────────────────────────────
+    { name: "HelpDesk+ for Microsoft Teams", spaceKey: "HFMT", platforms: ["microsoft", "atlassian-dc"], keywords: "helpdesk teams" },
+
+    // ── HTML for Confluence ───────────────────────────────────────────────────
+    { name: "HTML for Confluence", spaceKey: "HTML", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── HTML Macro ────────────────────────────────────────────────────────────
+    { name: "HTML Macro for Confluence Cloud", spaceKey: "HTMLM", platforms: ["atlassian-cloud"] },
+
+    // ── Image Slider ──────────────────────────────────────────────────────────
+    { name: "Image Slider for Confluence", spaceKey: "IMG", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Integration+ for Slack ────────────────────────────────────────────────
+    { name: "Integration+ for Slack", spaceKey: "JIFS", platforms: ["atlassian-cloud", "atlassian-dc", "slack"], keywords: "jira slack integration" },
+
+    // ── Integration+ for Microsoft Teams ─────────────────────────────────────
+    { name: "Integration+ for Microsoft Teams", spaceKey: "JIFMT", platforms: ["atlassian-cloud", "atlassian-dc", "microsoft"], keywords: "jira teams integration" },
+
+    // ── Issue History Collector ───────────────────────────────────────────────
+    { name: "Issue History Collector – See History", spaceKey: "IC", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "issue history" },
+
+    // ── Issue Matrix ──────────────────────────────────────────────────────────
+    { name: "Issue Matrix for Jira", platforms: [
+        { id: "atlassian-cloud", spaceKey: "IMC" },
+        { id: "atlassian-dc",    spaceKey: "ILV" }
+      ]
+    },
+
+    // ── Issue Events: Google Calendar ─────────────────────────────────────────
+    { name: "Issue Events: Google Calendar integration for Jira", spaceKey: "GCC", platforms: ["atlassian-cloud"], keywords: "google calendar jira" },
+
+    // ── Jira CLI ──────────────────────────────────────────────────────────────
+    { name: "Jira Command Line Interface (CLI)", spaceKey: "JCLI", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "jira CLI" },
+
+    // ── JMCF ──────────────────────────────────────────────────────────────────
+    { name: "Jira Misc Custom Fields (JMCF)", platforms: [
+        { id: "atlassian-cloud", spaceKey: "JMCFC" },
+        { id: "atlassian-dc",    spaceKey: "JMCF" }
+      ], keywords: "JMCF custom fields"
+    },
+
+    // ── JMWE ──────────────────────────────────────────────────────────────────
+    { name: "Jira Misc Workflow Extensions (JMWE)", platforms: [
+        { id: "atlassian-cloud", spaceKey: "JMWEC" },
+        { id: "atlassian-dc",    spaceKey: "JMWE" }
+      ], keywords: "JMWE workflow"
+    },
+
+    // ── JQL Search Extensions ─────────────────────────────────────────────────
+    { name: "JQL Search Extensions for Jira", spaceKey: "JQLSEARCH", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "JQL" },
+
+    // ── JSU ───────────────────────────────────────────────────────────────────
+    { name: "JSU Automation Suite for Jira Workflows", platforms: [
+        { id: "atlassian-cloud", spaceKey: "JSUCLOUD" },
+        { id: "atlassian-dc",    spaceKey: "JSU" }
+      ], keywords: "JSU automation"
+    },
+
+    // ── JXL ───────────────────────────────────────────────────────────────────
+    { name: "JXL", platforms: [
+        { id: "atlassian-cloud", externalUrl: "https://jxl.app/docs/" },
+        { id: "atlassian-dc",    externalUrl: "https://jxl.app/docs/" }
+      ], keywords: "jxl spreadsheet issue editor"
+    },
+
+    // ── LaTeX Math ────────────────────────────────────────────────────────────
+    { name: "LaTeX Math", spaceKey: "LM", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "latex math" },
+
+    // ── Linking for Confluence ────────────────────────────────────────────────
+    { name: "Linking for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "LINC" },
+        { id: "atlassian-dc",    spaceKey: "LINS" }
+      ]
+    },
+
+    // ── Live Fields ───────────────────────────────────────────────────────────
+    { name: "Live Fields for Jira Cloud", spaceKey: "LF", platforms: ["atlassian-cloud"] },
+
+    // ── Macro Security ────────────────────────────────────────────────────────
+    { name: "Macro Security for Confluence", spaceKey: "CMSP", platforms: ["atlassian-cloud"] },
+
+    // ── Markdown Extensions ───────────────────────────────────────────────────
+    { name: "Markdown Extensions for Confluence", spaceKey: "MARK", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "markdown" },
+
+    // ── Markdown for Confluence ───────────────────────────────────────────────
+    { name: "Markdown for Confluence", spaceKey: "MARKDOWN", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "markdown" },
+
+    // ── MultiExcerpt ──────────────────────────────────────────────────────────
+    { name: "MultiExcerpt", spaceKey: "ME", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── News Teaser ───────────────────────────────────────────────────────────
+    { name: "News Teaser for Confluence", spaceKey: "NEWS", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Numbered Captions ────────────────────────────────────────────────────
+    { name: "Numbered Captions", spaceKey: "NC", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Numbered Headings ─────────────────────────────────────────────────────
+    { name: "Numbered Headings", spaceKey: "NH", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Octo ──────────────────────────────────────────────────────────────────
+    { name: "Octo", spaceKey: "OCTO", platforms: ["atlassian-cloud"] },
+
+    // ── OKR for Jira ──────────────────────────────────────────────────────────
+    { name: "OKR for Jira", spaceKey: "OFJ", platforms: ["atlassian-cloud"], keywords: "OKR goals" },
+
+    // ── Page Approval ─────────────────────────────────────────────────────────
+    { name: "Page Approval for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "PAFC" },
+        { id: "atlassian-dc",    spaceKey: "PAFS" }
+      ], keywords: "page approval"
+    },
+
+    // ── Pages for Bitbucket ───────────────────────────────────────────────────
+    { name: "Pages for Bitbucket", spaceKey: "PAGE", platforms: ["atlassian-dc"] },
+
+    // ── Planning Poker: Jira + Azure DevOps ───────────────────────────────────
+    { name: "Planning Poker", platforms: [
+        { id: "atlassian-cloud", spaceKey: "PP",      label: "Jira Cloud" },
+        { id: "atlassian-dc",    spaceKey: "PP",      label: "Jira DC" },
+        { id: "microsoft",       spaceKey: "POKERADO", label: "Azure DevOps" }
+      ], keywords: "planning poker estimation"
+    },
+
+    // ── Polls for Confluence ──────────────────────────────────────────────────
+    { name: "Polls for Confluence", spaceKey: "POLL", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Power Admin ───────────────────────────────────────────────────────────
+    { name: "Power Admin", spaceKey: "PA", platforms: ["atlassian-dc"], keywords: "power admin jira" },
+
+    // ── Power BI Jira Connector ───────────────────────────────────────────────
+    { name: "Power BI Jira Connector", spaceKey: "APBCFJ", platforms: ["atlassian-cloud", "atlassian-dc", "microsoft"], keywords: "power bi" },
+
+        // ── Power Custom Fields ──────────────────────────────────────────
+    { name: "Power Custom Fields", spaceKey: "PCFC", platforms: ["atlassian-cloud"], keywords: "power custom fields" },
+
+    // ── Power Editor for Bitbucket ────────────────────────────────────────────
+    { name: "Power Editor for Bitbucket", spaceKey: "EDITOR", platforms: ["atlassian-cloud"] },
+
+    // ── Power Scripts for Confluence ──────────────────────────────────────────
+    { name: "Power Scripts for Confluence", spaceKey: "PSCONF", platforms: ["atlassian-dc"], keywords: "power scripts SIL" },
+
+    // ── Power Scripts for Jira ────────────────────────────────────────────────
+    { name: "Power Scripts for Jira", platforms: [
+        { id: "atlassian-cloud", spaceKey: "PSJC" },
+        { id: "atlassian-dc",    spaceKey: "PSJ" }
+      ], keywords: "power scripts SIL power actions forms custom fields dashboards database"
+    },
+
+    // ── Power Utilities ───────────────────────────────────────────────────────
+    { name: "Power Utilities for Jira", spaceKey: "UTIL", platforms: ["atlassian-cloud"] },
+
+    // ── Project Configurator ──────────────────────────────────────────────────
+    { name: "Project Configurator for Jira", spaceKey: "PC", platforms: ["atlassian-dc"] },
+
+    // ── Prometheus Exporter ───────────────────────────────────────────────────
+    { name: "Prometheus Exporter", spaceKey: "PE", platforms: ["atlassian-dc"], keywords: "prometheus metrics" },
+
+    // ── Publisher for Confluence to Salesforce ────────────────────────────────
+    { name: "Publisher for Confluence Cloud to Salesforce", spaceKey: "SFPUBC", platforms: ["atlassian-cloud", "salesforce"], keywords: "salesforce confluence publisher" },
+
+    // ── Reporting for Confluence ──────────────────────────────────────────────
+    { name: "Reporting for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "RFC" },
+        { id: "atlassian-dc",    spaceKey: "REPS" }
+      ], keywords: "reporting confluence"
+    },
+
+    // ── Reports and Timesheets ────────────────────────────────────────────────
+    { name: "Reports and Timesheets for Jira", spaceKey: "ART", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "timesheets reports" },
+
+    // ── Rich Filters ──────────────────────────────────────────────────────────
+    { name: "Rich Filters for Jira Dashboards", platforms: [
+        { id: "atlassian-cloud", spaceKey: "RFCDOC" },
+        { id: "atlassian-dc",    spaceKey: "RFP" }
+      ], keywords: "rich filters dashboard"
+    },
+
+    // ── Rich Filters::PDF Reports ─────────────────────────────────────────────
+    { name: "Rich Filters::PDF Reports for Jira", spaceKey: "RFPDF", platforms: ["atlassian-cloud"], keywords: "rich filters PDF" },
+
+    // ── Rich Filters::Service Management Dashboards ───────────────────────────
+    { name: "Rich Filters::Service Management Dashboards", spaceKey: "RFSD", platforms: ["atlassian-cloud"], keywords: "rich filters service management" },
+
+    // ── Rich Filters::Time Tracking Dashboards ────────────────────────────────
+    { name: "Rich Filters::Time Tracking Dashboards", spaceKey: "RFTT", platforms: ["atlassian-cloud"], keywords: "rich filters time tracking" },
+
+    // ── Run CLI Actions in Confluence ─────────────────────────────────────────
+    { name: "Run CLI Actions in Confluence", spaceKey: "CCLI", platforms: ["atlassian-dc"], keywords: "CLI confluence" },
+
+    // ── Run CLI Actions in Jira ───────────────────────────────────────────────
+    { name: "Run CLI Actions in Jira", spaceKey: "JCLIP", platforms: ["atlassian-dc"], keywords: "CLI jira" },
+
+    // ── Run Self-Service Reports ──────────────────────────────────────────────
+    { name: "Run Self-Service Reports for Confluence", spaceKey: "RUN", platforms: ["atlassian-dc"], keywords: "self-service reports" },
+
+    // ── SAFe EPIC ─────────────────────────────────────────────────────────────
+    { name: "SAFe EPIC to Feature Translator for Jira", spaceKey: "E2F", platforms: ["atlassian-dc"], keywords: "SAFe agile" },
+
+    // ── Scaffolding ───────────────────────────────────────────────────────────
+    { name: "Scaffolding Forms & Templates for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "SCAFC" },
+        { id: "atlassian-dc",    spaceKey: "SCAFS" }
+      ], keywords: "scaffolding forms templates"
+    },
+
+    // ── Scripting for Confluence ──────────────────────────────────────────────
+    { name: "Scripting for Confluence", spaceKey: "SCRP", platforms: ["atlassian-dc"], keywords: "scripting confluence" },
+
+    // ── Secure Content ────────────────────────────────────────────────────────
+    { name: "Secure Content for Confluence", spaceKey: "SCC", platforms: ["atlassian-dc"], keywords: "secure content" },
+
+    // ── Security and Encryption ───────────────────────────────────────────────
+    { name: "Security and Encryption for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "SECC" },
+        { id: "atlassian-dc",    spaceKey: "SECS" }
+      ], keywords: "security encryption"
+    },
+
+    // ── Snippets for Bitbucket ────────────────────────────────────────────────
+    { name: "Snippets for Bitbucket", spaceKey: "SNIP", platforms: ["atlassian-dc"] },
+
+    // ── Source Editor ─────────────────────────────────────────────────────────
+    { name: "Source Editor for Confluence", spaceKey: "SOURCE", platforms: ["atlassian-cloud", "atlassian-dc"] },
+
+    // ── Spacetree ─────────────────────────────────────────────────────────────
+    { name: "Spacetree for Confluence", spaceKey: "SPACE", platforms: ["atlassian-dc"] },
+
+    // ── SQL for Confluence ────────────────────────────────────────────────────
+    { name: "SQL for Confluence (Pro Edition)", spaceKey: "SQL", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "SQL confluence" },
+
+    // ── Survey and Vote Macros ────────────────────────────────────────────────
+    { name: "Survey and Vote Macros", spaceKey: "SURVOTE", platforms: ["atlassian-cloud"], keywords: "survey vote" },
+
+    // ── Surveys for Jira ──────────────────────────────────────────────────────
+    { name: "Surveys for Jira – Jira Customer Surveys", spaceKey: "SRV", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "surveys jira" },
+
+    // ── Swanly ────────────────────────────────────────────────────────────────
+    { name: "Swanly: Portfolio Roadmaps Structure Gantt, Release Timeline", spaceKey: "SRTFJ", platforms: ["atlassian-cloud"], keywords: "swanly roadmap gantt" },
+
+    // ── Tableau Connector ─────────────────────────────────────────────────────
+    { name: "Tableau Connector Pro for Jira", spaceKey: "ATCFJ", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "tableau connector" },
+
+    // ── TFS4JIRA ──────────────────────────────────────────────────────────────
+    { name: "TFS4JIRA Azure DevOps integration", spaceKey: "TFS4JIRA", platforms: ["atlassian-cloud", "atlassian-dc", "microsoft"], keywords: "TFS azure devops" },
+
+    // ── Time to SLA ───────────────────────────────────────────────────────────
+    { name: "Time to SLA for Jira", platforms: [
+        { id: "atlassian-cloud", spaceKey: "TTSC" },
+        { id: "atlassian-dc",    spaceKey: "TTS" }
+      ], keywords: "SLA time"
+    },
+
+    // ── Timesheets for Jira ───────────────────────────────────────────────────
+    { name: "Timesheets for Jira", spaceKey: "ART", platforms: ["atlassian-cloud", "atlassian-dc"], keywords: "timesheets" },
+
+    // ── Toggl Integration ─────────────────────────────────────────────────────
+    { name: "Toggl Integration for Jira", spaceKey: "TJC", platforms: ["atlassian-cloud"], keywords: "toggl time tracking" },
+
+    // ── Update on Transition ──────────────────────────────────────────────────
+    { name: "Update on Transition for Jira", spaceKey: "CW", platforms: ["atlassian-dc"] },
+
+    // ── Visibility for Confluence ─────────────────────────────────────────────
+    { name: "Visibility for Confluence", platforms: [
+        { id: "atlassian-cloud", spaceKey: "VISC" },
+        { id: "atlassian-dc",    spaceKey: "VISS" }
+      ], keywords: "visibility confluence"
+    },
+
+    // ── Visio for Confluence ──────────────────────────────────────────────────
+    { name: "Visio for Confluence", spaceKey: "CVP", platforms: ["atlassian-dc", "microsoft"], keywords: "visio confluence" },
+
+    // ── Yet Another Commit Checker ────────────────────────────────────────────
+    { name: "Yet Another Commit Checker", spaceKey: "YACC", platforms: ["atlassian-cloud"], keywords: "YACC commit checker bitbucket" },
+  ];
+
+  var PLATFORM_LABELS = {
+    "atlassian-cloud": { label: "Atlassian Cloud", cls: "p-ac"  },
+    "atlassian-dc":    { label: "Atlassian DC",    cls: "p-adc" },
+    "microsoft":       { label: "Microsoft",       cls: "p-ms"  },
+    "salesforce":      { label: "Salesforce",      cls: "p-sf"  },
+    "slack":           { label: "Slack",           cls: "p-sl"  },
+    "monday":          { label: "monday.com",      cls: "p-mo"  },
+    "SEI":             { label: "Software Engineering Intelligence", cls: "p-sei" },
+    "needs-tagging":   { label: "Needs tagging",   cls: "p-nt"  },
+  };
+
+  var PLATFORM_ORDER = ["atlassian-cloud","atlassian-dc","microsoft","monday","salesforce","slack","SEI","needs-tagging"];
+
+  var ARROW_SVG = '<svg class="tag-arrow" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 5h6M5 2l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  var matchMode = "AND";
+
+  function esc(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // Normalise platforms to objects with { id, spaceKey?, externalUrl?, label? }
+  function normalisePlatforms(app) {
+    return (app.platforms && app.platforms.length ? app.platforms : ["needs-tagging"])
+      .map(function(p) {
+        if (typeof p === "string") return { id: p };
+        return p;
+      });
+  }
+
+  // Resolve the URL for a platform entry, falling back to card-level
+  function resolveUrl(entry, app) {
+    if (entry.externalUrl) return entry.externalUrl;
+    if (entry.spaceKey)    return BASE_URL + entry.spaceKey;
+    if (app.externalUrl)   return app.externalUrl;
+    if (app.spaceKey)      return BASE_URL + app.spaceKey;
+    return null;
+  }
+
+  function getPlatformIds(app) {
+    return normalisePlatforms(app).map(function(p) { return p.id; });
+  }
+
+  function getFilters() {
+    return Array.from(document.querySelectorAll(".afd-filter:checked")).map(function(i){ return i.value; });
+  }
+
+  function matches(app, filters, query) {
+    var q = query.trim().toLowerCase();
+    if (q) {
+      var ids = getPlatformIds(app);
+      var searchText = [
+        app.name,
+        app.spaceKey || "",
+        app.keywords || "",
+        // include per-platform space keys in search text too
+        normalisePlatforms(app).map(function(p){ return p.spaceKey || ""; }).join(" ")
+      ].join(" ").toLowerCase();
+      if (searchText.indexOf(q) === -1) return false;
+    }
+    if (!filters.length) return true;
+    var plats = getPlatformIds(app);
+    if (matchMode === "OR")  return filters.some(function(f){ return plats.indexOf(f) !== -1; });
+    if (matchMode === "AND") return filters.every(function(f){ return plats.indexOf(f) !== -1; });
+    return true;
+  }
+
+  function render() {
+    var grid  = document.getElementById("afd-grid");
+    var empty = document.getElementById("afd-empty");
+    var qEl   = document.getElementById("afd-q");
+    var shown = document.getElementById("afd-shown");
+    var total = document.getElementById("afd-total");
+    if (!grid || !qEl) return;
+
+    var filters = getFilters();
+    var query   = qEl.value || "";
+    var visible = APPS.filter(function(app){ return matches(app, filters, query); });
+
+    grid.innerHTML = visible.map(function(app) {
+      var entries = normalisePlatforms(app).slice().sort(function(a, b) {
+        return PLATFORM_ORDER.indexOf(a.id) - PLATFORM_ORDER.indexOf(b.id);
+      });
+
+      var tags = entries.map(function(entry) {
+        var meta  = PLATFORM_LABELS[entry.id] || { label: entry.id, cls: "" };
+        var label = entry.label || meta.label;
+        var url   = resolveUrl(entry, app);
+        if (url) {
+          return '<a class="tag ' + meta.cls + '" href="' + esc(url) + '" target="_top">'
+               + esc(label) + ARROW_SVG + '</a>';
+        } else {
+          return '<span class="tag ' + meta.cls + '">' + esc(label) + '</span>';
+        }
+      }).join("");
+
+      return '<div class="card">'
+           + '<div class="card-body">'
+           + '<h3 class="name">' + esc(app.name) + '</h3>'
+           + '<div class="tags">' + tags + '</div>'
+           + '</div>'
+           + '</div>';
+    }).join("");
+
+    if (total) total.textContent = String(APPS.length);
+    if (shown) shown.textContent = String(visible.length);
+    if (empty) empty.hidden = visible.length > 0;
+  }
+
+  function setMode(mode) {
+    matchMode = mode;
+    var orBtn  = document.getElementById("afd-modeOr");
+    var andBtn = document.getElementById("afd-modeAnd");
+    if (orBtn)  orBtn.classList.toggle("is-active",  mode === "OR");
+    if (andBtn) andBtn.classList.toggle("is-active", mode === "AND");
+    render();
+  }
+
+  if (!window.__afdListeners) {
+    window.__afdListeners = true;
+    document.addEventListener("input", function(e) {
+      if (e.target && e.target.id === "afd-q") render();
+    });
+    document.addEventListener("change", function(e) {
+      if (e.target && e.target.classList.contains("afd-filter")) render();
+    });
+    document.addEventListener("click", function(e) {
+      if (!e.target) return;
+      var id = e.target.id;
+      if (id === "afd-clear") {
+        var qEl = document.getElementById("afd-q");
+        if (qEl) { qEl.value = ""; qEl.focus(); }
+        render();
+      }
+      if (id === "afd-modeOr")  setMode("OR");
+      if (id === "afd-modeAnd") setMode("AND");
+    });
+  }
+
+  function watchGrid() {
+    var g = document.getElementById("afd-grid");
+    if (!g) return;
+    var obs = new MutationObserver(function() {
+      if (g.children.length === 0) {
+        obs.disconnect();
+        render();
+        watchGrid();
+      }
+    });
+    obs.observe(g, { childList: true });
+  }
+  watchGrid();
+  render();
+
+  (function() {
+    var DARK = "#0b0f16";
+    document.documentElement.style.setProperty("background-color", DARK, "important");
+    document.body.style.setProperty("background-color", DARK, "important");
+  }());
+
+})();
+</script>
+</body>
+</html>
